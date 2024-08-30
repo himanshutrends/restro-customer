@@ -47,29 +47,6 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import Image from "next/image";
 
-function Timeline() {
-  return (
-    <div className="relative pt-6 pl-6 after:absolute after:inset-y-0 after:w-px after:bg-muted-foreground/20 grid gap-5">
-      <div className="grid gap-1 text-sm relative">
-        <div className="aspect-square w-3 bg-primary rounded-full absolute left-0 translate-x-[-29.5px] z-10 top-1" />
-        <div className="font-medium">Order Created</div>
-        <div className="text-muted-foreground">23 March 2023, 08:23 PM</div>
-      </div>
-      <div className="grid gap-1 text-sm relative">
-        <div className="aspect-square w-3 bg-primary rounded-full absolute left-0 translate-x-[-29.5px] z-10 top-1" />
-        <div className="font-medium">Order Cooking</div>
-        <div className="text-muted-foreground">23 March 2023, 08:25 PM</div>
-      </div>
-
-      <div className="grid gap-1 text-sm relative">
-        <div className="aspect-square w-3 bg-primary rounded-full absolute left-0 translate-x-[-29.5px] z-10 top-1 bg-green-500 animate-pulse" />
-        <div className="font-medium">Order Completes</div>
-        <div className="text-muted-foreground">23 March 2023, 08:49 PM</div>
-      </div>
-    </div>
-  );
-}
-
 export default function Order() {
   return (
     <main className="max-w-lg p-4 gap-4 grid">
@@ -135,7 +112,7 @@ export default function Order() {
           <Separator />
           <div className="flex items-center justify-between mt-2">
             <span className="text-sm font-medium text-muted-foreground">
-              Order placed on 23 March 2023, 08:23 PM
+              Order placed on 23 Mar, 08:23 PM
               <p className="text-base">Completed</p>
             </span>
             <span className="flex items-center text-base font-medium">

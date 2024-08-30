@@ -58,8 +58,11 @@ function Timeline() {
       </div>
 
       <div className="grid gap-1 text-sm relative">
-        <div className="aspect-square w-3 bg-primary rounded-full absolute left-0 translate-x-[-29.5px] z-10 top-1 bg-green-500 animate-pulse" />
-        <div className="font-medium">Order Completes</div>
+        <span class="flex h-3 w-3 absolute left-0 translate-x-[-29.5px] z-10 top-1">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+        </span>
+        <div className="font-medium">Order Completed</div>
         <div className="text-muted-foreground">23 March 2023, 08:49 PM</div>
       </div>
     </div>
@@ -208,23 +211,6 @@ export default function Order() {
                 <span>$329.00</span>
               </li>
             </ul>
-          </div>
-          <Separator className="my-4" />
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-3">
-              <div className="font-semibold">Shipping Information</div>
-              <address className="grid gap-0.5 not-italic text-muted-foreground">
-                <span>Liam Johnson</span>
-                <span>1234 Main St.</span>
-                <span>Anytown, CA 12345</span>
-              </address>
-            </div>
-            <div className="grid auto-rows-max gap-3">
-              <div className="font-semibold">Billing Information</div>
-              <div className="text-muted-foreground">
-                Same as shipping address
-              </div>
-            </div>
           </div>
           <Separator className="my-4" />
           <div className="grid gap-3">

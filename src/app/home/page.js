@@ -11,6 +11,7 @@ import {
   SwatchBook,
   ChevronLeft,
   ChefHat,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -41,9 +42,26 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+
 import { Input } from "@/components/ui/input";
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import Counter from "../cart/Counter";
+import { Auth } from "@/components/ui/auth";
 
 export function Item() {
   return (
@@ -90,6 +108,116 @@ export function Item() {
   );
 }
 
+export function Customize() {
+  return (
+    <Drawer>
+      <DrawerTrigger>Open</DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader className="flex items-start w-full">
+          <div className="flex flex-col items-start w-full">
+            <DrawerDescription>Veggie Burger • ₹120 - ₹230</DrawerDescription>
+            <DrawerTitle>Customise as per your taste</DrawerTitle>
+          </div>
+          <DrawerClose>
+            <Button
+              size="icon"
+              variant="outline"
+              className="rounded-full h-6 w-6"
+            >
+              <X size={16} />
+            </Button>
+          </DrawerClose>
+        </DrawerHeader>
+        <Separator className="my-4" />
+        <VariantAddon />
+
+        <DrawerFooter>
+          <div className="flex w-full gap-2 justify-between">
+            <span className="flex items-center gap-4 text-base font-bold">
+              ₹ 120
+              <Counter />
+            </span>
+
+            <Button
+              className="bg-blue-500 text-white text-base font-semibold w-24"
+              variant="outline"
+            >
+              ADD
+            </Button>
+          </div>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
+function VariantAddon() {
+  return (
+    <div className="mx-4">
+      {/* Variant */}
+      <Label forhtml="size">Size</Label>
+      <RadioGroup
+        className="flex flex-col gap-2 bg-accent rounded-xl p-4"
+        defaultValue="option-one"
+      >
+        <div
+          htmlFor="addon"
+          className="flex items-center justify-between w-full"
+        >
+          <div
+            htmlFor="option-one"
+            className="w-full flex items-center justify-between"
+          >
+            <p className="font-medium flex items-center gap-2">
+              <Image src="/veg.svg" alt="Dash" height="16" width="16" />
+              Small
+            </p>
+            <span className="text-muted-foreground mr-4">+ ₹20</span>
+          </div>
+          <RadioGroupItem value="option-one" id="option-one" />
+        </div>
+        <div
+          htmlFor="addon"
+          className="flex items-center justify-between w-full"
+        >
+          <div
+            htmlFor="option-t"
+            className="w-full flex items-center justify-between"
+          >
+            <p className="font-medium flex items-center gap-2">
+              <Image src="/non-veg.svg" alt="Dash" height="16" width="16" />
+              Medium
+            </p>
+            <span className="text-muted-foreground mr-4">+ ₹40</span>
+          </div>
+          <RadioGroupItem value="option-t" id="option-t" />
+        </div>
+      </RadioGroup>
+
+      {/* Add-on */}
+      <Label forhtml="addon">Add-on</Label>
+      <section className="flex flex-col gap-2 bg-accent rounded-xl p-4">
+        <div
+          htmlFor="addon"
+          className="flex items-center justify-between w-full"
+        >
+          <div
+            htmlFor="option-one"
+            className="w-full flex items-center justify-between mr-4"
+          >
+            <p className="font-medium flex items-center gap-2">
+              <Image src="/egg.svg" alt="Dash" height="16" width="16" />
+              Cheese
+            </p>
+            <span className="text-muted-foreground">+ ₹20</span>
+          </div>
+          <Checkbox value="addons" id="addons" />
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <main className="relative flex max-w-4xl min-h-screen flex-col gap-4 justify-evenly p-8">
@@ -100,9 +228,8 @@ export default function Home() {
           </Button>
           Restro
         </h2>
-        <Button variant="outline" className="h-8 w-fit ml-auto">
-          Login
-        </Button>
+
+        <Auth />
       </div>
 
       <Breadcrumb>
@@ -283,6 +410,7 @@ export default function Home() {
           </span>
         </button>
       </section>
+      <Customize />
     </main>
   );
 }
