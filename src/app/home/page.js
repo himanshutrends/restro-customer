@@ -12,6 +12,12 @@ import {
   ChevronLeft,
   ChefHat,
   X,
+  Pin,
+  Locate,
+  MapPin,
+  Phone,
+  LeafyGreen,
+  Timer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -61,13 +67,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Counter from "../cart/Counter";
-import { Auth } from "@/components/ui/auth";
+import { Auth, Promo } from "@/components/ui/auth";
+import { Menu } from "./menu";
 
 export function Item() {
   return (
     <>
-      <div className="w-[700px] flex justify-between py-8">
-        <div className="max-w-sm">
+      <div className="grid grid-cols-5 justify-between py-8">
+        <div className="col-span-3">
           <Image src="/veg.svg" alt="Dash" height="16" width="16" />
           <p className="text-lg font-medium">Chole Bhature</p>
           <span className="text-base font-medium text-muted-foreground">
@@ -78,18 +85,18 @@ export function Item() {
             3.5
             <p className="text-primary text-xs">(12 Ratings)</p>
           </span>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs">
             Chole Bhature is a popular North Indian dish. It is a combination of
             chana masala and bhatura, a fried bread made from maida flour.
           </p>
         </div>
-        <div>
-          <div className="relative w-40 h-40 align-top">
+        <div className="col-span-2">
+          <div className="relative aspect-square align-top">
             <img
               src="https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/01cf72fa714c88dfe8d77145d6cf1091"
               className="w-full h-full object-cover rounded-xl"
             />
-            <div className="absolute bottom-[-32px] left-10 flex flex-col items-center">
+            <div className="absolute bottom-[-32px] left-7 flex flex-col items-center">
               <Button
                 className="border-2 border-blue-500 text-blue-500 text-base font-semibold"
                 variant="outline"
@@ -220,7 +227,7 @@ function VariantAddon() {
 
 export default function Home() {
   return (
-    <main className="relative flex max-w-4xl min-h-screen flex-col gap-4 justify-evenly p-8">
+    <main className="flex max-w-lg min-h-screen flex-col gap-4 justify-evenly p-6 overflow-hidden">
       <div className="flex justify-between">
         <h2 className="text-2xl font-semibold">
           <Button size="icon" variant="outline" className="h-8 w-8 mr-2">
@@ -230,6 +237,7 @@ export default function Home() {
         </h2>
 
         <Auth />
+        <Menu />
       </div>
 
       <Breadcrumb>
@@ -247,6 +255,8 @@ export default function Home() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
+      {/* Outlet Image */}
       <div className="w-full grid grid-cols-5 grid-rows-2 gap-2">
         <div className="col-span-3 row-span-2">
           <img
@@ -279,24 +289,28 @@ export default function Home() {
           />
         </div>
       </div>
-      <section className="w-full flex justify-between my-8">
+
+      {/* Restaurant Details */}
+      <section className="w-full flex justify-between my-4">
         <div>
-          <h1 className="text-4xl font-semibold">Dominos India</h1>
-          <p className="text-lg">Pizza, Italian, Pasta, Fast Food, Desserts</p>
-          <p className="text-lg text-muted-foreground">
-            Address: Chhatarpur, Madhya Pradesh
+          <h1 className="text-xl font-semibold">Dominos India</h1>
+          <p className="text-xs">Pizza, Italian, Pasta, Fast Food, Desserts</p>
+          <p className="text-sm text-muted-foreground flex items-center gap-1">
+            <MapPin className="h-3.5 w-3.5" /> Chhatarpur, Madhya Pradesh
           </p>
-          <div className="flex gap-2 mt-2">
-            <Button>
-              <BellRing className="h-4 w-4 mr-2" /> Call Waiter
-            </Button>
-            <Button>
-              <BookmarkPlus className="h-4 w-4 mr-2" /> Favourite
-            </Button>
-            <Button>
-              <Share2 className="h-4 w-4 mr-2" /> Share
-            </Button>
+          <p className="text-sm text-muted-foreground flex items-center gap-1">
+            <Phone className="h-3.5 w-3.5" /> +91 1234567890
+          </p>
+
+          <div className="text-sm flex gap-2 items-center mt-2">
+            <span className="flex items-center">
+              <Timer className="h-3.5 w-3.5 mr-1" /> 30 Mins
+            </span>
+            <span className="text-current"> • ₹400 for 2</span>
           </div>
+          <p className="text-sm text-green-600 bg-green-50 flex items-center gap-1 border border-green-600 p-1 px-2 rounded-xl w-fit mt-2">
+            <LeafyGreen className="h-3.5 w-3.5" /> Pure Veg
+          </p>
         </div>
         <div>
           <Badge
@@ -311,8 +325,23 @@ export default function Home() {
           </p>
         </div>
       </section>
-      <section className="w-full grid grid-cols-4 mt-5 gap-8">
-        <div className="w-[700px]">
+
+      {/* Call Waiter, Bookmark, Share */}
+      <div className="flex gap-2">
+        <Button>
+          <BellRing className="h-4 w-4 mr-2" /> Call Waiter
+        </Button>
+        <Button>
+          <BookmarkPlus className="h-4 w-4" />
+        </Button>
+        <Button>
+          <Share2 className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Menu and Filters */}
+      <section className="w-full">
+        <div className="">
           <div className="flex justify-between">
             <ToggleGroup type="multiple" variant="outline">
               <ToggleGroupItem
@@ -340,8 +369,10 @@ export default function Home() {
                 <span>Non-Veg</span>
               </ToggleGroupItem>
             </ToggleGroup>
-            <Input className="w-56" placeholder="Search for dishes" />
           </div>
+          <Input className="my-2" placeholder="Search for dishes" />
+
+          {/* Menu */}
           <Accordion type="single" collapsible>
             <AccordionItem value="item-1">
               <AccordionTrigger>
@@ -356,7 +387,8 @@ export default function Home() {
           </Accordion>
         </div>
       </section>
-      <section className="sticky bottom-0 right-0 w-full">
+
+      <section className="flex flex-col items-end fixed bottom-0 right-0 w-full">
         <div className="m-2 w-fit">
           <DropdownMenu>
             <DropdownMenuTrigger>
@@ -365,7 +397,7 @@ export default function Home() {
                 Menu
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mr-16">
+            <DropdownMenuContent className="w-56 mr-6">
               <DropdownMenuLabel>Menu</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
