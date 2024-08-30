@@ -3,14 +3,12 @@ import Image from "next/image";
 
 import {
   ChevronLeft,
-  ChevronRight,
   ChevronsRight,
   Copy,
-  CreditCard,
-  MoreVertical,
-  ScrollText,
+  NotepadText,
   Store,
-  Truck,
+  Tags,
+  Utensils,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -18,17 +16,18 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 import {
   Select,
@@ -41,27 +40,33 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { ChevronRightIcon } from "@radix-ui/react-icons";
+import Link from "next/link";
 
 export function Items() {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-start bg-muted/50">
         <div className="grid gap-0.5">
-          <CardTitle className="group flex items-center gap-2 text-lg">
-            Total Bill
-            <Button
-              size="icon"
-              variant="outline"
-              className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
-            >
-              <Copy className="h-3 w-3" />
-              <span className="sr-only">Copy Order ID</span>
-            </Button>
+          <CardTitle className="flex gap-1">
+            <NotepadText className="h-4 w-4" /> Bill Summary
           </CardTitle>
-          <CardDescription>Date: November 23, 2023</CardDescription>
+          <CardDescription>Apply Offers to get discount</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="p-6 text-sm">
+        <Label forHTML="coupon" className="flex items-center mb-1">
+          <Tags className="h-3.5 w-3.5 mr-1" /> Discount
+        </Label>
+        <div className="flex items-center gap-2 mb-4">
+          <Input
+            id="coupon"
+            label="Coupon Code"
+            placeholder="Enter coupon code"
+          />
+          <Button>Apply</Button>
+        </div>
         <div className="grid gap-3">
           <ul className="grid gap-3">
             <li className="flex items-center justify-between">
@@ -98,47 +103,85 @@ export function Items() {
 
 export default function Orders() {
   return (
-    <main className="grid gap-6 p-8">
+    <main className="grid gap-4 p-6">
+      <h2 className="text-2xl font-semibold">
+        <Button size="icon" variant="outline" className="h-8 w-8 mr-2">
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        Cart
+      </h2>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/components">Restaurant</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Cart</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/50">
-          <div className="text-lg font-bold flex gap-1">
-            <Store /> Restaurant
-          </div>
+          <CardTitle className="flex gap-1">
+            <Store className="h-4 w-4" /> Restaurant
+          </CardTitle>
+          <CardDescription>Outlet Information</CardDescription>
         </CardHeader>
-        <CardContent>
-          <p>
-            <strong>Outlet ID:</strong> 123456
-          </p>
-          <p>
-            <strong>Outlet Name:</strong> Sagar Gaire
-          </p>
-          <p>
-            <strong>Outlet Address:</strong> 1234 Main St., Anytown, CA 12345
-          </p>
+        <CardContent className="grid gap-2 mt-4">
+          <div className="flex items-center gap-4">
+            <div className="aspect-square">
+              <Image
+                src="/pizza.jpg"
+                alt="Restaurant"
+                height="100"
+                width="100"
+                className="w-full h-full object-cover rounded-lg"
+              />
+            </div>
+
+            <div className="text-muted-foreground text-sm">
+              <div className="text-base text-primary font-semibold">
+                Sagar Gaire, Chhindwara
+              </div>
+              Liam Johnson1234 Main St.Anytown, CA 12345
+              <div className="flex items-center gap-1">
+                <Link
+                  href="tel:+1234567890"
+                  className="flex items-center text-blue-500"
+                >
+                  View Menu <ChevronRightIcon className="h-4 w-4 mt-1" />
+                </Link>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
+
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/50">
-          <div className="text-lg font-bold flex gap-1">
-            <ScrollText /> Items
-          </div>
+          <CardTitle className="flex gap-1">
+            <Utensils className="h-4 w-4" /> Items
+          </CardTitle>
+          <CardDescription>Customize your quantity</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="">
+          <div className="mt-2">
             <div className="flex items-center justify-between">
-              <p className="text-lg font-medium flex items-center gap-2">
-                <Image src="/veg.svg" alt="Dash" height="16" width="16" />
+              <p className="font-medium flex items-center gap-1">
+                <Image src="/veg.svg" alt="Dash" height="14" width="14" />
                 Chole Bhature
               </p>
               <Counter className="" />
             </div>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-base font-medium text-muted-foreground">
-                ₹ 120
-              </span>
-              <span className="text-base font-medium text-muted-foreground">
-                ₹ 120
-              </span>
+            <div className="flex items-center justify-between text-sm mt-1">
+              <span className="font-medium text-muted-foreground">₹ 120</span>
+              <span className="font-medium">₹ 120</span>
             </div>
           </div>
         </CardContent>

@@ -75,7 +75,7 @@ export default function Order() {
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/50">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16">
+            <div className="aspect-square">
               <Image
                 src="/pizza.jpg"
                 alt="Restaurant"
@@ -86,7 +86,7 @@ export default function Order() {
             </div>
 
             <div className="text-muted-foreground text-sm">
-              <div className="text-lg text-primary font-semibold">
+              <div className="text-base text-primary font-semibold">
                 Sagar Gaire, Chhindwara
               </div>
               Liam Johnson1234 Main St.Anytown, CA 12345
