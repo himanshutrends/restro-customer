@@ -2,13 +2,16 @@ import Counter from "./Counter";
 import Image from "next/image";
 
 import {
+  Bike,
   ChevronLeft,
   ChevronsRight,
   Copy,
   NotepadText,
+  Package,
   Store,
   Tags,
   Utensils,
+  UtensilsCrossed,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +44,8 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 
@@ -187,7 +192,21 @@ export default function Orders() {
         </CardContent>
       </Card>
 
-      <Card className="p-6 gap-2   flex flex-col">
+      <Card className="p-6 gap-3 items-start flex flex-col">
+        <Label forHTML="type">Order Type</Label>
+        <ToggleGroup id="type" type="single">
+          <ToggleGroupItem value="a" className="border rounded-full">
+            <UtensilsCrossed className="h-3.5 w-3.5 mr-1" /> DineIn
+          </ToggleGroupItem>
+          <ToggleGroupItem value="b" className="border rounded-full">
+            <Package className="h-3.5 w-3.5 mr-1" />
+            Takeaway
+          </ToggleGroupItem>
+          <ToggleGroupItem value="c" className="border rounded-full">
+            <Bike className="h-3.5 w-3.5 mr-1" /> Delivery
+          </ToggleGroupItem>
+        </ToggleGroup>
+
         <Label forHTML="instruction">Add Cooking Instruction</Label>
         <Textarea id="instruction" placeholder="Add your cooking instruction" />
 

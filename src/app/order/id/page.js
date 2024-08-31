@@ -10,6 +10,7 @@ import {
   MoreVertical,
   PhoneCall,
   Star,
+  Timer,
   Truck,
 } from "lucide-react";
 
@@ -58,9 +59,9 @@ function Timeline() {
       </div>
 
       <div className="grid gap-1 text-sm relative">
-        <span class="flex h-3 w-3 absolute left-0 translate-x-[-29.5px] z-10 top-1">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+        <span className="flex h-3 w-3 absolute left-0 translate-x-[-29.5px] z-10 top-1">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
         </span>
         <div className="font-medium">Order Completed</div>
         <div className="text-muted-foreground">23 March 2023, 08:49 PM</div>
@@ -130,7 +131,13 @@ export default function Order() {
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/50">
           <CardTitle>Status</CardTitle>
-          <CardDescription>Order Delivered</CardDescription>
+          <CardDescription className="flex justify-between items-center">
+            Order Delivered
+            <span className="flex items-center border p-1 px-2 rounded-full text-green-700 border-green-700 bg-green-100">
+              <Timer className="w-4 h-4 mr-1" />
+              Est. 21:00 Mins
+            </span>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Timeline />
