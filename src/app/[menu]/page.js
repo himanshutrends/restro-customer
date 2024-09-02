@@ -1,6 +1,4 @@
-import Link from "next/link";
 import Image from "next/image";
-
 import { Badge } from "@/components/ui/badge";
 import {
   BellRing,
@@ -20,15 +18,6 @@ import {
   Timer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 import {
   DropdownMenu,
@@ -40,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -49,185 +39,25 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 
 import { Input } from "@/components/ui/input";
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import Counter from "../cart/Counter";
-import { Auth, Promo } from "@/components/ui/auth";
+
+import { Auth } from "@/components/ui/auth";
 import { Menu } from "./menu";
 
-export function Item() {
-  return (
-    <>
-      <div className="grid grid-cols-5 justify-between py-8">
-        <div className="col-span-3">
-          <Image src="/veg.svg" alt="Dash" height="16" width="16" />
-          <p className="text-lg font-medium">Chole Bhature</p>
-          <span className="text-base font-medium text-muted-foreground">
-            ₹ 120
-          </span>
-          <span className="text-green-700 flex gap-1 items-center my-2">
-            <Star className="fill-green-700 w-4 h-4 ml-1" />
-            3.5
-            <p className="text-primary text-xs">(12 Ratings)</p>
-          </span>
-          <p className="text-muted-foreground text-xs">
-            Chole Bhature is a popular North Indian dish. It is a combination of
-            chana masala and bhatura, a fried bread made from maida flour.
-          </p>
-        </div>
-        <div className="col-span-2">
-          <div className="relative aspect-square align-top">
-            <img
-              src="https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/01cf72fa714c88dfe8d77145d6cf1091"
-              className="w-full h-full object-cover rounded-xl"
-            />
-            <div className="absolute bottom-[-32px] left-7 flex flex-col items-center">
-              <Button
-                className="border-2 border-blue-500 text-blue-500 text-base font-semibold"
-                variant="outline"
-              >
-                ADD +
-              </Button>
-              <p className="text-xs text-muted-foreground font-semibold mt-1">
-                CUSTOMIZE
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <Separator />
-    </>
-  );
-}
+import { apiGet } from "@/handlers/apiHandler";
+import { MenuAccordion } from "./MenuAccordion";
+import { ItemAdded } from "./ItemAdded";
 
-export function Customize() {
-  return (
-    <Drawer>
-      <DrawerTrigger>Open</DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="flex items-start w-full">
-          <div className="flex flex-col items-start w-full">
-            <DrawerDescription>Veggie Burger • ₹120 - ₹230</DrawerDescription>
-            <DrawerTitle>Customise as per your taste</DrawerTitle>
-          </div>
-          <DrawerClose>
-            <Button
-              size="icon"
-              variant="outline"
-              className="rounded-full h-6 w-6"
-            >
-              <X size={16} />
-            </Button>
-          </DrawerClose>
-        </DrawerHeader>
-        <Separator className="my-4" />
-        <VariantAddon />
-
-        <DrawerFooter>
-          <div className="flex w-full gap-2 justify-between">
-            <span className="flex items-center gap-4 text-base font-bold">
-              ₹ 120
-              <Counter />
-            </span>
-
-            <Button
-              className="bg-blue-500 text-white text-base font-semibold w-24"
-              variant="outline"
-            >
-              ADD
-            </Button>
-          </div>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
-  );
-}
-
-function VariantAddon() {
-  return (
-    <div className="mx-4">
-      {/* Variant */}
-      <Label forhtml="size">Size</Label>
-      <RadioGroup
-        className="flex flex-col gap-2 bg-accent rounded-xl p-4"
-        defaultValue="option-one"
-      >
-        <div
-          htmlFor="addon"
-          className="flex items-center justify-between w-full"
-        >
-          <div
-            htmlFor="option-one"
-            className="w-full flex items-center justify-between"
-          >
-            <p className="font-medium flex items-center gap-2">
-              <Image src="/veg.svg" alt="Dash" height="16" width="16" />
-              Small
-            </p>
-            <span className="text-muted-foreground mr-4">+ ₹20</span>
-          </div>
-          <RadioGroupItem value="option-one" id="option-one" />
-        </div>
-        <div
-          htmlFor="addon"
-          className="flex items-center justify-between w-full"
-        >
-          <div
-            htmlFor="option-t"
-            className="w-full flex items-center justify-between"
-          >
-            <p className="font-medium flex items-center gap-2">
-              <Image src="/non-veg.svg" alt="Dash" height="16" width="16" />
-              Medium
-            </p>
-            <span className="text-muted-foreground mr-4">+ ₹40</span>
-          </div>
-          <RadioGroupItem value="option-t" id="option-t" />
-        </div>
-      </RadioGroup>
-
-      {/* Add-on */}
-      <Label forhtml="addon">Add-on</Label>
-      <section className="flex flex-col gap-2 bg-accent rounded-xl p-4">
-        <div
-          htmlFor="addon"
-          className="flex items-center justify-between w-full"
-        >
-          <div
-            htmlFor="option-one"
-            className="w-full flex items-center justify-between mr-4"
-          >
-            <p className="font-medium flex items-center gap-2">
-              <Image src="/egg.svg" alt="Dash" height="16" width="16" />
-              Cheese
-            </p>
-            <span className="text-muted-foreground">+ ₹20</span>
-          </div>
-          <Checkbox value="addons" id="addons" />
-        </div>
-      </section>
-    </div>
-  );
-}
-
-export default function Home() {
+export default async function Home({ params }) {
+  const itemsPromis = apiGet(`/api/shop/client-menu/${params.menu}`);
+  const outletPromis = apiGet(`/api/shop/outlet/${params.menu}`);
+  const [items, outlet] = await Promise.all([itemsPromis, outletPromis]);
   return (
     <main className="flex max-w-lg min-h-screen flex-col gap-4 justify-evenly p-6 overflow-hidden">
+      {/* Header */}
       <div className="flex justify-between">
         <h2 className="text-2xl font-semibold">
           <Button size="icon" variant="outline" className="h-8 w-8 mr-2">
@@ -235,7 +65,6 @@ export default function Home() {
           </Button>
           Restro
         </h2>
-
         <Auth />
         <Menu />
       </div>
@@ -293,13 +122,13 @@ export default function Home() {
       {/* Restaurant Details */}
       <section className="w-full flex justify-between my-4">
         <div>
-          <h1 className="text-xl font-semibold">Dominos India</h1>
+          <h1 className="text-xl font-semibold">{outlet.name}</h1>
           <p className="text-xs">Pizza, Italian, Pasta, Fast Food, Desserts</p>
           <p className="text-sm text-muted-foreground flex items-center gap-1">
-            <MapPin className="h-3.5 w-3.5" /> Chhatarpur, Madhya Pradesh
+            <MapPin className="h-3.5 w-3.5" /> {outlet.location}
           </p>
           <p className="text-sm text-muted-foreground flex items-center gap-1">
-            <Phone className="h-3.5 w-3.5" /> +91 1234567890
+            <Phone className="h-3.5 w-3.5" /> +91 {outlet.phone}
           </p>
 
           <div className="text-sm flex gap-2 items-center mt-2">
@@ -371,24 +200,12 @@ export default function Home() {
             </ToggleGroup>
           </div>
           <Input className="my-2" placeholder="Search for dishes" />
-
           {/* Menu */}
-          <Accordion type="single" collapsible>
-            <AccordionItem value="item-1">
-              <AccordionTrigger>
-                <p className="text-xl font-bold">Breakfast</p>
-              </AccordionTrigger>
-              <AccordionContent className="gap-2 flex flex-col">
-                <Item />
-                <Item />
-                <Item />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <MenuAccordion items={items} />
         </div>
       </section>
 
-      <section className="flex flex-col items-end fixed bottom-0 right-0 w-full">
+      {/* <section className="flex flex-col items-end fixed bottom-0 right-0 w-full">
         <div className="m-2 w-fit">
           <DropdownMenu>
             <DropdownMenuTrigger>
@@ -435,14 +252,8 @@ export default function Home() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <button className="w-full bg-green-600 flex items-center justify-between p-6">
-          <span className="text-white font-bold">2 item added</span>
-          <span className="text-white font-bold flex gap-2">
-            View Cart <ShoppingBag />
-          </span>
-        </button>
-      </section>
-      <Customize />
+        <ItemAdded />
+      </section> */}
     </main>
   );
 }

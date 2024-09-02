@@ -1,3 +1,4 @@
+'use client';
 import Counter from "./Counter";
 import Image from "next/image";
 
@@ -43,6 +44,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
+import { useCart } from "@/context/CartContext";
 
 export function Items() {
   return (
@@ -102,6 +104,8 @@ export function Items() {
 }
 
 export default function Orders() {
+  const { cartItems, updateQuantity } = useCart();
+  
   return (
     <main className="grid gap-4 p-6">
       <h2 className="text-2xl font-semibold">
@@ -110,6 +114,7 @@ export default function Orders() {
         </Button>
         Cart
       </h2>
+
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -170,21 +175,23 @@ export default function Orders() {
           </CardTitle>
           <CardDescription>Customize your quantity</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="mt-2">
-            <div className="flex items-center justify-between">
-              <p className="font-medium flex items-center gap-1">
-                <Image src="/veg.svg" alt="Dash" height="14" width="14" />
-                Chole Bhature
-              </p>
-              <Counter className="" />
-            </div>
-            <div className="flex items-center justify-between text-sm mt-1">
-              <span className="font-medium text-muted-foreground">₹ 120</span>
-              <span className="font-medium">₹ 120</span>
-            </div>
-          </div>
-        </CardContent>
+        {cartItems.map((item) => (
+            <CardContent>
+              <div className="mt-2">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium flex items-center gap-1">
+                    <Image src="/veg.svg" alt="Dash" height="14" width="14" />
+                    {item.name}
+                  </p>
+                  <Counter count={item.quantity} itemId={item.id} />
+                </div>
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="font-medium text-muted-foreground">₹ {item.price}</span>
+                  <span className="font-medium">₹ {item.totalPrice}</span>
+                </div>
+              </div>
+            </CardContent>
+          ))}
       </Card>
 
       <Card className="p-6 gap-2   flex flex-col">

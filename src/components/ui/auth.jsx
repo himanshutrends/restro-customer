@@ -1,5 +1,4 @@
 "use client";
-
 import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
@@ -32,35 +31,47 @@ import {
 } from "@/components/ui/input-otp";
 import { Input } from "./input";
 import { Label } from "./label";
+import firebase from "@/app/firebase";
 
 export function Auth() {
   const [step, setStep] = useState(1);
   const [otpTimer, setOtpTimer] = useState(30);
   const [userExists, setUserExists] = useState(false);
+  const [verificationId, setVerificationId] = useState("");
+  const recaptchaVerifierRef = useRef(null);
 
-  useEffect(() => {
-    if (step === 2) {
-      const interval = setInterval(() => {
-        setOtpTimer((prev) => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
+  // useEffect(() => {
+  //   // Initialize reCAPTCHA only if the container is available and step is 1
+  //   if (step === 1) {
+  //     const container = document.getElementById("recaptcha-container");
+  //     if (container) {
+  //       recaptchaVerifierRef.current = new firebase.auth.RecaptchaVerifier(container, {
+  //         size: "invisible",
+  //         callback: (response) => {
+  //           handleSendCode();
+  //         },
+  //         'expired-callback': () => {
+  //           console.warn("reCAPTCHA expired. Try again.");
+  //         },
+  //       });
+  //     } else {
+  //       console.error("Recaptcha container not found.");
+  //     }
+  //   }
 
-      return () => clearInterval(interval);
-    }
-  }, [step]);
+  //   // Clean up reCAPTCHA verifier on unmount
+  //   return () => {
+  //     if (recaptchaVerifierRef.current) {
+  //       recaptchaVerifierRef.current.clear();
+  //     }
+  //   };
+  // }, [step]);
 
   const handleNext = () => {
     if (step === 1) {
-      // Mock function to check if the user exists
-      const exists = mockCheckUserExists();
-      setUserExists(exists);
-      setStep(2);
+      handleSendCode();
     } else if (step === 2) {
-      if (userExists) {
-        // If the user exists, skip to submission
-        submitLogin();
-      } else {
-        setStep(3);
-      }
+      handleVerifyCode();
     } else if (step === 3) {
       submitLogin();
     }
@@ -73,9 +84,58 @@ export function Auth() {
     return "Submit";
   };
 
-  const submitLogin = () => {
-    // Logic to handle the final submission
-    console.log("Login Successfull");
+  const handleSendCode = () => {
+    const phoneNumber = document.getElementById("phone-number-input").value;
+
+    if (!recaptchaVerifierRef.current) {
+      console.error("RecaptchaVerifier is not initialized.");
+      return;
+    }
+
+    firebase.auth().signInWithPhoneNumber(phoneNumber, recaptchaVerifierRef.current)
+      .then((confirmationResult) => {
+        setVerificationId(confirmationResult.verificationId);
+        setStep(2);
+      })
+      .catch((error) => {
+        console.error("Error during sending OTP: ", error);
+        if (recaptchaVerifierRef.current) {
+          recaptchaVerifierRef.current.clear();
+          recaptchaVerifierRef.current = new firebase.auth.RecaptchaVerifier(
+            "recaptcha-container",
+            {
+              size: "invisible",
+              callback: (response) => {
+                handleSendCode();
+              },
+              'expired-callback': () => {
+                console.warn("reCAPTCHA expired. Try again.");
+              },
+            }
+          );
+        }
+      });
+  };
+
+  const handleVerifyCode = () => {
+    const code = document.getElementById("otp-input").value;
+
+    if (verificationId) {
+      const credential = firebase.auth.PhoneAuthProvider.credential(verificationId, code);
+      firebase
+        .auth()
+        .signInWithCredential(credential)
+        .then((userCredential) => {
+          console.log("User signed in successfully:", userCredential);
+          setUserExists(true);
+          setStep(3);
+        })
+        .catch((error) => {
+          console.error("Error verifying OTP: ", error);
+        });
+    } else {
+      console.error("No verification ID found.");
+    }
   };
 
   return (
@@ -103,9 +163,12 @@ export function Auth() {
         </DrawerHeader>
         <Promo />
         <Separator className="my-4" />
-        {step === 1 && <Phone />}
-        {step === 2 && <Otp timer={otpTimer} />}
+        {step === 1 && <Phone handleSendCode={handleSendCode} />}
+        {step === 2 && (
+          <Otp timer={otpTimer} handleVerifyCode={handleVerifyCode} />
+        )}
         {step === 3 && !userExists && <Name />}
+        <div id="recaptcha-container"></div>
         <DrawerFooter>
           <Button onClick={handleNext}>{getButtonText()}</Button>
         </DrawerFooter>
@@ -114,35 +177,47 @@ export function Auth() {
   );
 }
 
-function Phone() {
+// Phone component
+function Phone({ handleSendCode }) {
+  const [phoneNumber, setPhoneNumber] = useState("");
+
   return (
-    <div className="flex flex-col gap-2 w-full px-4">
-      <Label>Mobile Number</Label>
-      <Input placeholder="Enter Phone Number" required />
-    </div>
+    <>
+      <div className="flex flex-col gap-2 w-full px-4">
+        <Label>Mobile Number</Label>
+        <Input
+          id="phone-number-input"
+          placeholder="Enter Phone Number"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          required
+        />
+      </div>
+      <DrawerFooter>
+        <Button id="send-code-button" onClick={handleSendCode}>
+          Send Code
+        </Button>
+      </DrawerFooter>
+    </>
   );
 }
 
-function Otp({ timer }) {
+// Otp component
+function Otp({ timer, handleVerifyCode }) {
+  const [otp, setOtp] = useState("");
+
   return (
     <div className="flex flex-col gap-2 items-center w-full px-4">
       <Label>Enter OTP</Label>
-      <InputOTP maxLength={6}>
-        <InputOTPGroup>
-          <InputOTPSlot index={0} />
-          <InputOTPSlot index={1} />
-        </InputOTPGroup>
-        <InputOTPSeparator />
-        <InputOTPGroup>
-          <InputOTPSlot index={2} />
-          <InputOTPSlot index={3} />
-        </InputOTPGroup>
-        <InputOTPSeparator />
-        <InputOTPGroup>
-          <InputOTPSlot index={4} />
-          <InputOTPSlot index={5} />
-        </InputOTPGroup>
-      </InputOTP>
+      <Input
+        id="otp-input"
+        type="text"
+        placeholder="Enter OTP"
+        value={otp}
+        onChange={(e) => setOtp(e.target.value)}
+        maxLength={6}
+        required
+      />
       <p className="text-xs">
         Resend in 00:{timer.toString().padStart(2, "0")}
       </p>
@@ -150,26 +225,22 @@ function Otp({ timer }) {
   );
 }
 
+// Name component
 function Name() {
   return (
     <div className="flex flex-col gap-2 w-full px-4">
       <Label>Name</Label>
       <Input placeholder="Rahul Tiwari" required />
-
       <Label>Email</Label>
       <Input type="email" placeholder="rahul@restro.com" />
     </div>
   );
 }
 
-// Mock function to simulate user existence check
-function mockCheckUserExists() {
-  return Math.random() > 0.5; // Randomly returns true or false
-}
-
-export function Promo() {
+// Promo component
+function Promo() {
   const plugin = React.useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: false }),
+    Autoplay({ delay: 2000, stopOnInteraction: false })
   );
 
   return (
