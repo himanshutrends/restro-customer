@@ -117,7 +117,7 @@ export default function Orders() {
       </Breadcrumb>
 
       <Card className="overflow-hidden">
-        <CardHeader className="bg-muted/50">
+        <CardHeader className="bg-rose-50">
           <CardTitle className="flex gap-1">
             <Store className="h-4 w-4" /> {outlet?.shop?.name}
           </CardTitle>
@@ -154,29 +154,34 @@ export default function Orders() {
       </Card>
 
       <Card className="overflow-hidden">
-        <CardHeader className="bg-muted/50">
+        <CardHeader className="bg-rose-50">
           <CardTitle className="flex gap-1">
             <Utensils className="h-4 w-4" /> Items
           </CardTitle>
           <CardDescription>Customize your quantity</CardDescription>
         </CardHeader>
-        {cartItems.map((item, key) => (
-          <CardContent key={key}>
-            <div className="mt-2">
-              <div className="flex items-center justify-between">
-                <p className="font-medium flex items-center gap-1">
-                  <Image src="/veg.svg" alt="Dash" height="14" width="14" />
-                  {item.food_item?.name}{item.variant && ` - ${item.variant?.variant}`}
-                </p>
-                <SetQuantity item={item} />
-              </div>
-              <div className="flex items-center justify-between text-sm mt-1">
-                <span className="font-medium text-muted-foreground">₹ {item.food_item.price}</span>
-                <span className="font-medium">₹ {item.totalPrice}</span>
-              </div>
+        <CardContent>
+          <div className="mt-2">
+            <div className="flex items-center justify-between">
+              <p className="font-medium flex items-center gap-1">
+                <Image src="/veg.svg" alt="Dash" height="14" width="14" />
+                Chole Bhature - Half
+              </p>
+              <Counter className="" />
             </div>
-          </CardContent>
-        ))}
+            <div className="flex items-center justify-between text-sm mt-1">
+              <span className="font-medium text-muted-foreground">₹ 120</span>
+              <span className="font-medium">₹ 120</span>
+            </div>
+            <p className="text-muted-foreground text-xs">Cheese, Dahi</p>
+            <Link
+              href="/components"
+              className="flex items-center text-rose-500 text-xs"
+            >
+              Customize <ChevronsRight className="w-3 h-3 ml-1" />
+            </Link>
+          </div>
+        </CardContent>
       </Card>
 
       <Card className="p-6 gap-3 items-start flex flex-col">
@@ -209,8 +214,8 @@ export default function Orders() {
           </SelectContent>
         </Select>
       </Card>
-      <Items items={cartItems}/>
-      <button className="sticky bottom-5 right-0 p-4 rounded-xl bg-green-500 flex items-center justify-center text-white font-bold">
+      <Items />
+      <button className="sticky bottom-5 right-0 p-4 rounded-xl bg-rose-500 flex items-center justify-center text-white font-bold shadow-xl">
         Proceed to Pay ₹ 120 <ChevronsRight className="h-6 w-6 ml-3" />
       </button>
     </main>
