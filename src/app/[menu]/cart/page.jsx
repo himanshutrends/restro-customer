@@ -51,27 +51,52 @@ import { SetQuantity } from "./SetQuantity";
 export default function Orders() {
   const { fetchCartItems } = useCart();
   const [cartItems, setCartItems] = useState([]);
+  const [tables, setTables] = useState([]);
   const [outlet, setOutlet] = useState({});
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  const [orderType, setOrderType] = useState({});
+  const handleOrderType = (e) => {
+    setOrderType({ ...orderType, [e.target.name]: e.target.value });
+  };
+
 
   const pathname = usePathname();
   const pathnames = pathname.split('/');
 
   const fetchOutlet = async () => {
     const response = await fetch(`http://localhost:8000/api/shop/outlet/${pathnames[1]}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch outlet');
+    }
     return response.json();
   };
-
+  
+  const fetchTables = async () => {
+    const response = await fetch(`http://localhost:8000/api/shop/tables/${pathnames[1]}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch tables');
+    }
+    return response.json();
+  };
+  
   useEffect(() => {
     (async () => {
-      const outlet = await fetchOutlet();
+      const [outlet, tables, cartItems] = await Promise.all([
+        fetchOutlet(),
+        fetchTables(),
+        fetchCartItems(),
+      ]);
       setOutlet(outlet);
-      const items = await fetchCartItems();
-      setCartItems(items);
+      setTables(tables);
+      setCartItems(cartItems);
+      setTotalPrice(cartItems?.reduce((acc, item) => acc + item.totalPrice, 0))
     })()
   }, [cartItems]);
 
   return (
     <main className="grid gap-4 p-6">
+      {/* Header */}
       <h2 className="text-2xl font-semibold">
         <Link href={`/${pathnames[1]}`}>
           <Button size="icon" variant="outline" className="h-8 w-8 mr-2">
@@ -81,6 +106,7 @@ export default function Orders() {
         Cart
       </h2>
 
+      {/* Breadcrumb */}
       <Breadcrumb>
         <BreadcrumbList>
           {
@@ -115,7 +141,8 @@ export default function Orders() {
           }
         </BreadcrumbList>
       </Breadcrumb>
-
+      
+      {/* Restro Info */}
       <Card className="overflow-hidden">
         <CardHeader className="bg-rose-50">
           <CardTitle className="flex gap-1">
@@ -152,7 +179,8 @@ export default function Orders() {
           </div>
         </CardContent>
       </Card>
-
+        
+      {/* List Items */}
       <Card className="overflow-hidden">
         <CardHeader className="bg-rose-50">
           <CardTitle className="flex gap-1">
@@ -160,14 +188,20 @@ export default function Orders() {
           </CardTitle>
           <CardDescription>Customize your quantity</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="mt-2">
-            <div className="flex items-center justify-between">
-              <p className="font-medium flex items-center gap-1">
-                <Image src="/veg.svg" alt="Dash" height="14" width="14" />
-                Chole Bhature - Half
-              </p>
-              <Counter className="" />
+        {cartItems?.map((item, key) => (
+          <CardContent key={key}>
+            <div className="mt-2">
+              <div className="flex items-center justify-between">
+                <p className="font-medium flex items-center gap-1">
+                  <Image src="/veg.svg" alt="Dash" height="14" width="14" />
+                  {item.food_item?.name}{item.variant && ` - ${item.variant?.variant}`}
+                </p>
+                <SetQuantity item={item} />
+              </div>
+              <div className="flex items-center justify-between text-sm mt-1">
+                <span className="font-medium text-muted-foreground">₹ {item.food_item.price}</span>
+                <span className="font-medium">₹ {item.totalPrice}</span>
+              </div>
             </div>
             <div className="flex items-center justify-between text-sm mt-1">
               <span className="font-medium text-muted-foreground">₹ 120</span>
@@ -180,8 +214,8 @@ export default function Orders() {
             >
               Customize <ChevronsRight className="w-3 h-3 ml-1" />
             </Link>
-          </div>
-        </CardContent>
+          </CardContent>
+        ))}
       </Card>
 
       <Card className="p-6 gap-3 items-start flex flex-col">
@@ -200,23 +234,25 @@ export default function Orders() {
         </ToggleGroup>
 
         <Label forHTML="instruction">Add Cooking Instruction</Label>
-        <Textarea id="instruction" placeholder="Add your cooking instruction" />
+        <Textarea id="instruction" placeholder="Add your cooking instruction" onChange={handleOrderType} />
 
         <Label forHTML="tableid">Table</Label>
         <Select id="tableid">
           <SelectTrigger>
-            <SelectValue placeholder="Table 2 - Inside" />
+            <SelectValue placeholder={tables?.length > 0 && tables[0]?.name} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Table 1 - Inside</SelectItem>
-            <SelectItem value="2">Table 2 - Inside</SelectItem>
-            <SelectItem value="3">Table 3 - Outside</SelectItem>
+            {tables?.map((table, key) => (
+              <SelectItem key={key} value={table.id} onClick={() => setOrderType({ tableid: table.id })}>
+                {table.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </Card>
-      <Items />
+      <Items items={cartItems}/>
       <button className="sticky bottom-5 right-0 p-4 rounded-xl bg-rose-500 flex items-center justify-center text-white font-bold shadow-xl">
-        Proceed to Pay ₹ 120 <ChevronsRight className="h-6 w-6 ml-3" />
+        Proceed to Pay ₹ {totalPrice} <ChevronsRight className="h-6 w-6 ml-3" />
       </button>
     </main>
   );

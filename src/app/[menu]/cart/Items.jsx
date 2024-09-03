@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tags, NotepadText } from "lucide-react";
 
 export function Items({ items }) {
-    const totalPrice = items.reduce((acc, item) => acc + item.totalPrice, 0);
+    const totalPrice = items?.reduce((acc, item) => acc + item.totalPrice, 0);
     return (
         <Card className="overflow-hidden">
             <CardHeader className="flex flex-row items-start bg-muted/50">

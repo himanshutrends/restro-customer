@@ -27,4 +27,4 @@ function Counter({ count, item, setCount }) {
   );
 }
 
-export default Counter; // Export Counter directly
+export default Counter;
