@@ -53,6 +53,7 @@ export default function Orders() {
   const [cartItems, setCartItems] = useState([]);
   const [tables, setTables] = useState([]);
   const [outlet, setOutlet] = useState({});
+  const [totalPrice, setTotalPrice] = useState(0);
 
   const [orderType, setOrderType] = useState({});
   const handleOrderType = (e) => {
@@ -86,10 +87,10 @@ export default function Orders() {
         fetchTables(),
         fetchCartItems(),
       ]);
-      console.log(outlet, tables, cartItems);
       setOutlet(outlet);
       setTables(tables);
       setCartItems(cartItems);
+      setTotalPrice(cartItems?.reduce((acc, item) => acc + item.totalPrice, 0))
     })()
   }, [cartItems]);
 
@@ -143,7 +144,7 @@ export default function Orders() {
       
       {/* Restro Info */}
       <Card className="overflow-hidden">
-        <CardHeader className="bg-muted/50">
+        <CardHeader className="bg-rose-50">
           <CardTitle className="flex gap-1">
             <Store className="h-4 w-4" /> {outlet?.shop?.name}
           </CardTitle>
@@ -181,7 +182,7 @@ export default function Orders() {
         
       {/* List Items */}
       <Card className="overflow-hidden">
-        <CardHeader className="bg-muted/50">
+        <CardHeader className="bg-rose-50">
           <CardTitle className="flex gap-1">
             <Utensils className="h-4 w-4" /> Items
           </CardTitle>
@@ -202,6 +203,17 @@ export default function Orders() {
                 <span className="font-medium">₹ {item.totalPrice}</span>
               </div>
             </div>
+            <div className="flex items-center justify-between text-sm mt-1">
+              <span className="font-medium text-muted-foreground">₹ 120</span>
+              <span className="font-medium">₹ 120</span>
+            </div>
+            <p className="text-muted-foreground text-xs">Cheese, Dahi</p>
+            <Link
+              href="/components"
+              className="flex items-center text-rose-500 text-xs"
+            >
+              Customize <ChevronsRight className="w-3 h-3 ml-1" />
+            </Link>
           </CardContent>
         ))}
       </Card>
@@ -238,9 +250,9 @@ export default function Orders() {
           </SelectContent>
         </Select>
       </Card>
-      <Items items={cartItems} />
-      <button className="sticky bottom-5 right-0 p-4 rounded-xl bg-green-500 flex items-center justify-center text-white font-bold">
-        Proceed to Pay ₹ 120 <ChevronsRight className="h-6 w-6 ml-3" />
+      <Items items={cartItems}/>
+      <button className="sticky bottom-5 right-0 p-4 rounded-xl bg-rose-500 flex items-center justify-center text-white font-bold shadow-xl">
+        Proceed to Pay ₹ {totalPrice} <ChevronsRight className="h-6 w-6 ml-3" />
       </button>
     </main>
   );
