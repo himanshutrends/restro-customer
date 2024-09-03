@@ -51,27 +51,51 @@ import { SetQuantity } from "./SetQuantity";
 export default function Orders() {
   const { fetchCartItems } = useCart();
   const [cartItems, setCartItems] = useState([]);
+  const [tables, setTables] = useState([]);
   const [outlet, setOutlet] = useState({});
+
+  const [orderType, setOrderType] = useState({});
+  const handleOrderType = (e) => {
+    setOrderType({ ...orderType, [e.target.name]: e.target.value });
+  };
+
 
   const pathname = usePathname();
   const pathnames = pathname.split('/');
 
   const fetchOutlet = async () => {
     const response = await fetch(`http://localhost:8000/api/shop/outlet/${pathnames[1]}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch outlet');
+    }
     return response.json();
   };
-
+  
+  const fetchTables = async () => {
+    const response = await fetch(`http://localhost:8000/api/shop/tables/${pathnames[1]}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch tables');
+    }
+    return response.json();
+  };
+  
   useEffect(() => {
     (async () => {
-      const outlet = await fetchOutlet();
+      const [outlet, tables, cartItems] = await Promise.all([
+        fetchOutlet(),
+        fetchTables(),
+        fetchCartItems(),
+      ]);
+      console.log(outlet, tables, cartItems);
       setOutlet(outlet);
-      const items = await fetchCartItems();
-      setCartItems(items);
+      setTables(tables);
+      setCartItems(cartItems);
     })()
   }, [cartItems]);
 
   return (
     <main className="grid gap-4 p-6">
+      {/* Header */}
       <h2 className="text-2xl font-semibold">
         <Link href={`/${pathnames[1]}`}>
           <Button size="icon" variant="outline" className="h-8 w-8 mr-2">
@@ -81,6 +105,7 @@ export default function Orders() {
         Cart
       </h2>
 
+      {/* Breadcrumb */}
       <Breadcrumb>
         <BreadcrumbList>
           {
@@ -115,7 +140,8 @@ export default function Orders() {
           }
         </BreadcrumbList>
       </Breadcrumb>
-
+      
+      {/* Restro Info */}
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/50">
           <CardTitle className="flex gap-1">
@@ -152,7 +178,8 @@ export default function Orders() {
           </div>
         </CardContent>
       </Card>
-
+        
+      {/* List Items */}
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/50">
           <CardTitle className="flex gap-1">
@@ -160,7 +187,7 @@ export default function Orders() {
           </CardTitle>
           <CardDescription>Customize your quantity</CardDescription>
         </CardHeader>
-        {cartItems.map((item, key) => (
+        {cartItems?.map((item, key) => (
           <CardContent key={key}>
             <div className="mt-2">
               <div className="flex items-center justify-between">
@@ -195,21 +222,23 @@ export default function Orders() {
         </ToggleGroup>
 
         <Label forHTML="instruction">Add Cooking Instruction</Label>
-        <Textarea id="instruction" placeholder="Add your cooking instruction" />
+        <Textarea id="instruction" placeholder="Add your cooking instruction" onChange={handleOrderType} />
 
         <Label forHTML="tableid">Table</Label>
         <Select id="tableid">
           <SelectTrigger>
-            <SelectValue placeholder="Table 2 - Inside" />
+            <SelectValue placeholder={tables?.length > 0 && tables[0]?.name} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Table 1 - Inside</SelectItem>
-            <SelectItem value="2">Table 2 - Inside</SelectItem>
-            <SelectItem value="3">Table 3 - Outside</SelectItem>
+            {tables?.map((table, key) => (
+              <SelectItem key={key} value={table.id} onClick={() => setOrderType({ tableid: table.id })}>
+                {table.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </Card>
-      <Items items={cartItems}/>
+      <Items items={cartItems} />
       <button className="sticky bottom-5 right-0 p-4 rounded-xl bg-green-500 flex items-center justify-center text-white font-bold">
         Proceed to Pay ₹ 120 <ChevronsRight className="h-6 w-6 ml-3" />
       </button>
