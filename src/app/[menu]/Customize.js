@@ -13,7 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import Counter from "../cart/Counter";
+import Counter from "./cart/Counter";
 import { Separator } from "@/components/ui/separator";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,9 @@ import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 
 function VariantAddon({ variant, selectedVariant, onVariantChange, addons, selectedAddons, onAddonChange }) {
+    console.log(selectedVariant);
+    console.log(selectedAddons);
+    console.log(variant);
     return (
         <div className="mx-4">
             {/* Variant */}
@@ -41,7 +44,7 @@ function VariantAddon({ variant, selectedVariant, onVariantChange, addons, selec
                                     </p>
                                     <span className="text-muted-foreground mr-4">₹{option.price}</span>
                                 </div>
-                                <RadioGroupItem value={option.price} id={option.variant} checked={selectedVariant === option.price} />
+                                <RadioGroupItem value={option} id={option.variant} checked={selectedVariant.price === option.price} />
                             </div>
                         ))}
                     </RadioGroup>
@@ -63,10 +66,10 @@ function VariantAddon({ variant, selectedVariant, onVariantChange, addons, selec
                                     <span className="text-muted-foreground">+ ₹{addon.price}</span>
                                 </div>
                                 <Checkbox
-                                    value={addon.price}
+                                    value={addon}
                                     id={addon.name}
-                                    checked={selectedAddons.includes(addon.price)}
-                                    onCheckedChange={(checked) => onAddonChange(addon.price, checked)}
+                                    checked={selectedAddons.includes(addon)}
+                                    onCheckedChange={(checked) => onAddonChange(addon, checked)}
                                 />
                             </div>
                         ))}
@@ -82,7 +85,8 @@ export function Customize({ item }) {
     const { addToCart } = useCart();
 
     // State to manage selected variant and add-ons
-    const [selectedVariant, setSelectedVariant] = useState(item?.variants?.type[0]?.price || 0);
+    // default variant should be the the one which has same price as item price
+    const [selectedVariant, setSelectedVariant] = useState(item?.variants?.type.find((variant) => variant.price === item.price));
     const [selectedAddons, setSelectedAddons] = useState([]);
     const [totalPrice, setTotalPrice] = useState(item.price);
     const [count, setCount] = React.useState(1);
@@ -92,9 +96,9 @@ export function Customize({ item }) {
         if (count <= 0) {
             setCount(1);
         }
-        let addonsPrice = selectedAddons.reduce((sum, addon) => sum + parseFloat(addon), 0);
+        let addonsPrice = selectedAddons.reduce((sum, addon) => sum + parseFloat(addon.price), 0);
         if (selectedVariant) {
-            setTotalPrice(parseFloat(selectedVariant) * count + addonsPrice);
+            setTotalPrice(parseFloat(selectedVariant.price) * count + addonsPrice);
         } else {
             setTotalPrice(parseFloat(item.price) * count + addonsPrice);
         }
@@ -115,10 +119,10 @@ export function Customize({ item }) {
     const handleAddToCart = () => {
         addToCart({
             ...item,
+        },
             selectedVariant,
             selectedAddons,
-            totalPrice,
-        }, count);
+            totalPrice, count);
     };
 
     return (
@@ -163,7 +167,7 @@ export function Customize({ item }) {
                                 ₹ {totalPrice}
                                 <Counter
                                     count={count}
-                                    itemId={item.id}
+                                    item={item}
                                     setCount={setCount}
                                 />
                             </span>

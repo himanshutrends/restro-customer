@@ -1,5 +1,6 @@
 'use client'
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect, use } from 'react';
+import { usePathname } from 'next/navigation'
 
 // Create Cart Context
 const CartContext = createContext();
@@ -13,12 +14,38 @@ export const CartProvider = ({ children }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
 
+  const pathname = usePathname()
+  const outletSlug = pathname.split('/')[1]
+
+  const fetchCartItems = async () => {
+    try {
+      const response = await fetch(`/api/cart/${outletSlug}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (response.status === 200) {
+        const cartItems = await response.json();
+        setCartItems(cartItems);
+      }
+      return cartItems;
+    }
+    catch (error) {
+      console.error('Error fetching cart items:', error);
+      return cartItems;
+    }
+  };
+
+  useEffect(() => {
+    fetchCartItems();
+  }, []);
+
   // Function to add item to cart
-  const addToCart = (item, quantity) => {
+  const addToCart = async (item, variant, addons, totalPrice, quantity) => {
+    const uniqueItemKey = `${item.id}-${variant?.id || 'default'}-${addons.map(addon => addon.id).sort().join('-')}`;
     setCartItems((prevItems) => {
-      const existingItemIndex = prevItems.findIndex(
-        (cartItem) => cartItem.id === item.id && cartItem.selectedVariant === item.selectedVariant && JSON.stringify(cartItem.selectedAddons) === JSON.stringify(item.selectedAddons)
-      );
+      const existingItemIndex = prevItems.findIndex((cartItem) => cartItem.id === uniqueItemKey);
 
       if (existingItemIndex !== -1) {
         // Update quantity if item with same customization already exists in cart
@@ -28,29 +55,101 @@ export const CartProvider = ({ children }) => {
       }
 
       // Add new customized item to cart
-      return [...prevItems, { ...item, quantity }];
+      return [...prevItems, {
+        id: uniqueItemKey,
+        food_item: item,
+        quantity,
+        variant,
+        addons,
+        totalPrice,
+      }];
     });
 
-    setIsDrawerOpen(false); // Close drawer after adding to cart
-  };
+    // Try to sync with backend
+    try {
+      const response = await fetch(`/api/cart/${outletSlug}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: uniqueItemKey,
+          food_item_id: item.id,
+          variant_id: variant?.id,
+          quantity,
+          totalPrice: totalPrice,
+          addons: addons?.map((addon) => {
+            return addon.id
+          }),
+        })
+      })
+      if (response.status !== 200) {
+        throw new Error('Error adding item to cart');
+      }
+      const cartItems = await response.json();
+      console.log(cartItems, 'cartItems')
+      setCartItems(cartItems);
+    } catch (error) {
+      console.log(cartItems, 'cartItems')
+    };
+    setIsDrawerOpen(false);
+  }
 
   // Function to update item quantity in cart
-  const updateQuantity = (itemId, newQuantity) => {
+  const updateQuantity = async (id, newQuantity) => {
     if (newQuantity <= 0) {
-      return removeFromCart(itemId);
+      return removeFromCart(id);
     }
     setCartItems((prevItems) =>
       prevItems.map((item) =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
+        item.id === id ? {
+          ...item,
+          totalPrice: item.addons.reduce((sum, addon) => sum + parseFloat(addon.price), 0) +
+            ((item.variant ? parseFloat(item.variant.price) : parseFloat(item.food_item.price)) *
+            newQuantity),
+          quantity: newQuantity,
+        } : item
       )
     );
+    console.log(cartItems, 'cartItems')
+    // Trying to sync with backend
+    try {
+      const response = await fetch(`/api/cart/${outletSlug}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ quantity: newQuantity }),
+      })
+      if (response.status !== 200) {
+        throw new Error('Error updating item quantity in cart');
+      }
+      const cartItems = await response.json();
+      setCartItems(cartItems);
+    } catch (error) {
+      console.error('Error updating item quantity in cart:', error);
+    }
   };
 
   // Function to remove item from cart
-  const removeFromCart = (itemId) => {
-    setCartItems((prevItems) =>
-      prevItems.filter((item) => item.id !== itemId)
-    );
+  const removeFromCart = async (id) => {
+    try {
+      const response = await fetch(`/api/cart/${outletSlug}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (response.status !== 200) {
+        throw new Error('Error removing item from cart');
+      }
+      const cartItems = await response.json();
+      setCartItems(cartItems);
+    } catch (error) {
+      setCartItems((prevItems) =>
+        prevItems.filter((item) => item.id !== id)
+      );
+    }
   };
 
   // Function to open customization drawer for an item
@@ -68,6 +167,7 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider
       value={{
+        fetchCartItems,
         cartItems,
         addToCart,
         updateQuantity,

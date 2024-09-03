@@ -38,35 +38,32 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
-
 import { Input } from "@/components/ui/input";
-
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
 import { Auth } from "@/components/ui/auth";
-import { Menu } from "./menu";
-
+import { Menu } from "./Menu";
 import { apiGet } from "@/handlers/apiHandler";
 import { MenuAccordion } from "./MenuAccordion";
 import { ItemAdded } from "./ItemAdded";
+import { getSession } from "@/app/lib/auth/session";
 
 export default async function Home({ params }) {
   const itemsPromis = apiGet(`/api/shop/client-menu/${params.menu}`);
   const outletPromis = apiGet(`/api/shop/outlet/${params.menu}`);
   const [items, outlet] = await Promise.all([itemsPromis, outletPromis]);
+  const session = await getSession();
+  
   return (
-    <main className="flex max-w-lg min-h-screen flex-col gap-4 justify-evenly p-6 overflow-hidden">
+    <main className="flex w-full min-h-screen flex-col gap-4 justify-evenly p-6 overflow-hidden">
       {/* Header */}
       <div className="flex justify-between">
         <h2 className="text-2xl font-semibold">
           <Button size="icon" variant="outline" className="h-8 w-8 mr-2">
             <ChefHat className="h-4 w-4" />
           </Button>
-          Restro
+          Tacoza
         </h2>
-        <Auth />
-        <Menu />
+        {session ? <Menu /> : <Auth />}
       </div>
 
       <Breadcrumb>
@@ -76,11 +73,7 @@ export default async function Home({ params }) {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/components">Restaurant</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Table 4 - Inside</BreadcrumbPage>
+            <BreadcrumbPage>{params.menu.toUpperCase()}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -135,7 +128,6 @@ export default async function Home({ params }) {
             <span className="flex items-center">
               <Timer className="h-3.5 w-3.5 mr-1" /> 30 Mins
             </span>
-            <span className="text-current"> • ₹400 for 2</span>
           </div>
           <p className="text-sm text-green-600 bg-green-50 flex items-center gap-1 border border-green-600 p-1 px-2 rounded-xl w-fit mt-2">
             <LeafyGreen className="h-3.5 w-3.5" /> Pure Veg
@@ -205,7 +197,7 @@ export default async function Home({ params }) {
         </div>
       </section>
 
-      {/* <section className="flex flex-col items-end fixed bottom-0 right-0 w-full">
+      <section className="flex flex-col items-end fixed bottom-0 right-0 w-full">
         <div className="m-2 w-fit">
           <DropdownMenu>
             <DropdownMenuTrigger>
@@ -217,43 +209,23 @@ export default async function Home({ params }) {
             <DropdownMenuContent className="w-56 mr-6">
               <DropdownMenuLabel>Menu</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                Recommended
-                <DropdownMenuShortcut>
-                  <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                    2
-                  </Badge>
-                </DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Main course
-                <DropdownMenuShortcut>
-                  <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                    2
-                  </Badge>
-                </DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Chinese
-                <DropdownMenuShortcut>
-                  <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                    2
-                  </Badge>
-                </DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                South Indian
-                <DropdownMenuShortcut>
-                  <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                    2
-                  </Badge>
-                </DropdownMenuShortcut>
-              </DropdownMenuItem>
+              {
+                items.map((item) => (
+                  <DropdownMenuItem key={item.id}>
+                    {item.name}
+                    <DropdownMenuShortcut>
+                      <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
+                        { item.food_items ? item.food_items?.length : 0}
+                      </Badge>
+                    </DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                ))
+              }
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <ItemAdded />
-      </section> */}
+        <ItemAdded params={params}/>
+      </section>
     </main>
   );
 }

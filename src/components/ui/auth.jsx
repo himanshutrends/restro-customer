@@ -1,4 +1,5 @@
 "use client";
+import { createContext, useContext } from "react";
 import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
@@ -31,216 +32,198 @@ import {
 } from "@/components/ui/input-otp";
 import { Input } from "./input";
 import { Label } from "./label";
-import firebase from "@/app/firebase";
+import { useRouter } from "next/navigation";
+
+const AuthContext = createContext();
 
 export function Auth() {
   const [step, setStep] = useState(1);
   const [otpTimer, setOtpTimer] = useState(30);
-  const [userExists, setUserExists] = useState(false);
-  const [verificationId, setVerificationId] = useState("");
-  const recaptchaVerifierRef = useRef(null);
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
 
-  // useEffect(() => {
-  //   // Initialize reCAPTCHA only if the container is available and step is 1
-  //   if (step === 1) {
-  //     const container = document.getElementById("recaptcha-container");
-  //     if (container) {
-  //       recaptchaVerifierRef.current = new firebase.auth.RecaptchaVerifier(container, {
-  //         size: "invisible",
-  //         callback: (response) => {
-  //           handleSendCode();
-  //         },
-  //         'expired-callback': () => {
-  //           console.warn("reCAPTCHA expired. Try again.");
-  //         },
-  //       });
-  //     } else {
-  //       console.error("Recaptcha container not found.");
-  //     }
-  //   }
-
-  //   // Clean up reCAPTCHA verifier on unmount
-  //   return () => {
-  //     if (recaptchaVerifierRef.current) {
-  //       recaptchaVerifierRef.current.clear();
-  //     }
-  //   };
-  // }, [step]);
-
-  const handleNext = () => {
-    if (step === 1) {
-      handleSendCode();
-    } else if (step === 2) {
-      handleVerifyCode();
-    } else if (step === 3) {
-      submitLogin();
+  useEffect(() => {
+    if (step === 2) {
+      const interval = setInterval(() => {
+        setOtpTimer((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+      return () => clearInterval(interval);
     }
-  };
-
-  const getButtonText = () => {
-    if (step === 1 || (step === 2 && !userExists)) {
-      return "Continue";
-    }
-    return "Submit";
-  };
-
-  const handleSendCode = () => {
-    const phoneNumber = document.getElementById("phone-number-input").value;
-
-    if (!recaptchaVerifierRef.current) {
-      console.error("RecaptchaVerifier is not initialized.");
-      return;
-    }
-
-    firebase.auth().signInWithPhoneNumber(phoneNumber, recaptchaVerifierRef.current)
-      .then((confirmationResult) => {
-        setVerificationId(confirmationResult.verificationId);
-        setStep(2);
-      })
-      .catch((error) => {
-        console.error("Error during sending OTP: ", error);
-        if (recaptchaVerifierRef.current) {
-          recaptchaVerifierRef.current.clear();
-          recaptchaVerifierRef.current = new firebase.auth.RecaptchaVerifier(
-            "recaptcha-container",
-            {
-              size: "invisible",
-              callback: (response) => {
-                handleSendCode();
-              },
-              'expired-callback': () => {
-                console.warn("reCAPTCHA expired. Try again.");
-              },
-            }
-          );
-        }
-      });
-  };
-
-  const handleVerifyCode = () => {
-    const code = document.getElementById("otp-input").value;
-
-    if (verificationId) {
-      const credential = firebase.auth.PhoneAuthProvider.credential(verificationId, code);
-      firebase
-        .auth()
-        .signInWithCredential(credential)
-        .then((userCredential) => {
-          console.log("User signed in successfully:", userCredential);
-          setUserExists(true);
-          setStep(3);
-        })
-        .catch((error) => {
-          console.error("Error verifying OTP: ", error);
-        });
-    } else {
-      console.error("No verification ID found.");
-    }
-  };
+  }, [step]);
 
   return (
-    <Drawer>
-      <DrawerTrigger asChild>
-        <Button variant="outline" className="h-8 w-fit ml-auto">
-          Login
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent className="h-[65vh]">
-        <DrawerHeader className="flex items-start w-full">
-          <div className="flex flex-col items-start w-full">
-            <DrawerDescription>Order with Restro</DrawerDescription>
-            <DrawerTitle>Login</DrawerTitle>
-          </div>
-          <DrawerClose>
-            <Button
-              size="icon"
-              variant="outline"
-              className="rounded-full h-6 w-6"
-            >
-              <X size={16} />
-            </Button>
-          </DrawerClose>
-        </DrawerHeader>
-        <Promo />
-        <Separator className="my-4" />
-        {step === 1 && <Phone handleSendCode={handleSendCode} />}
-        {step === 2 && (
-          <Otp timer={otpTimer} handleVerifyCode={handleVerifyCode} />
-        )}
-        {step === 3 && !userExists && <Name />}
-        <div id="recaptcha-container"></div>
-        <DrawerFooter>
-          <Button onClick={handleNext}>{getButtonText()}</Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+    <AuthContext.Provider value={{ step, setStep, phone, setPhone, otp, setOtp, otpTimer }}>
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button variant="outline" className="h-8 w-fit ml-auto">
+            Login
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="h-[65vh]">
+          <DrawerHeader className="flex items-start w-full">
+            <div className="flex flex-col items-start w-full">
+              <DrawerDescription>Order with Tacoza</DrawerDescription>
+              <DrawerTitle>Login</DrawerTitle>
+            </div>
+            <DrawerClose>
+              <Button
+                size="icon"
+                variant="outline"
+                className="rounded-full h-6 w-6"
+              >
+                <X size={16} />
+              </Button>
+            </DrawerClose>
+          </DrawerHeader>
+          <Promo />
+          <Separator className="my-4" />
+          {step === 1 && <Phone />}
+          {step === 2 && <Otp />}
+          {step === 3 && <Name />}
+        </DrawerContent>
+      </Drawer>
+    </AuthContext.Provider>
   );
 }
 
-// Phone component
-function Phone({ handleSendCode }) {
-  const [phoneNumber, setPhoneNumber] = useState("");
+function Phone() {
+  const { phone, setPhone, setStep, setOtp } = useContext(AuthContext);
+  const validatePhone = () => {
+    if (phone.length !== 10) {
+      return false;
+    }
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      return false;
+    }
+    return true;
+  };
 
+  const handleNext = async () => {
+    if (!validatePhone(phone)) {
+      console.log("Invalid Phone Number");
+      return;
+    }
+    const response = await fetch("http://localhost:8000/api/auth/send-otp/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ 'phone_number': phone }),
+    });
+    if (response.status === 200) {
+      const res = await response.json();
+      setOtp(res.otp);
+      setStep(2);
+    }
+    console.log(response);
+  };
   return (
     <>
       <div className="flex flex-col gap-2 w-full px-4">
         <Label>Mobile Number</Label>
-        <Input
-          id="phone-number-input"
-          placeholder="Enter Phone Number"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-          required
-        />
+        <Input placeholder="Enter Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       </div>
       <DrawerFooter>
-        <Button id="send-code-button" onClick={handleSendCode}>
-          Send Code
-        </Button>
+        <Button onClick={handleNext}>Get OTP</Button>
       </DrawerFooter>
     </>
   );
 }
 
-// Otp component
-function Otp({ timer, handleVerifyCode }) {
-  const [otp, setOtp] = useState("");
-
+function Otp() {
+  const { phone, otp, setOtp, setStep, otpTimer } = useContext(AuthContext);
+  const router = useRouter();
+  const handleNext = async () => {
+    const response = await fetch("/api/verify-otp/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ phone, otp }),
+    });
+    if (response.status === 200) {
+      const res = await response.json();
+      if (!res.user.name || !res.user.email) {
+        setStep(3);
+      } else {
+        router.push("/cart");
+      }
+    }
+  }
   return (
-    <div className="flex flex-col gap-2 items-center w-full px-4">
-      <Label>Enter OTP</Label>
-      <Input
-        id="otp-input"
-        type="text"
-        placeholder="Enter OTP"
-        value={otp}
-        onChange={(e) => setOtp(e.target.value)}
-        maxLength={6}
-        required
-      />
-      <p className="text-xs">
-        Resend in 00:{timer.toString().padStart(2, "0")}
-      </p>
-    </div>
+    <>
+      <div className="flex flex-col gap-2 items-center w-full px-4">
+        {otp}
+        <Label>Enter OTP</Label>
+        <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+          </InputOTPGroup>
+          <InputOTPSeparator />
+          <InputOTPGroup>
+            <InputOTPSlot index={2} />
+            <InputOTPSlot index={3} />
+          </InputOTPGroup>
+          <InputOTPSeparator />
+          <InputOTPGroup>
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
+        <p className="text-xs">
+          Resend in 00:{otpTimer.toString().padStart(2, "0")}
+        </p>
+      </div>
+      <DrawerFooter>
+        <Button onClick={handleNext}>Continue</Button>
+      </DrawerFooter>
+    </>
   );
 }
 
-// Name component
 function Name() {
+  const { setStep } = useContext(AuthContext);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const router = useRouter();
+
+  const handleNext = async () => {
+    if (!name || !email) {
+      console.log("Invalid Name or Email");
+      return;
+    }
+    const response = await fetch("/api/update-user/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email }),
+    });
+    if (response.status === 200) {
+      console.log(response);
+      router.push("/cart");
+    }
+  }
   return (
-    <div className="flex flex-col gap-2 w-full px-4">
-      <Label>Name</Label>
-      <Input placeholder="Rahul Tiwari" required />
-      <Label>Email</Label>
-      <Input type="email" placeholder="rahul@restro.com" />
-    </div>
+    <>
+      <div className="flex flex-col gap-2 w-full px-4">
+        <Label>Name</Label>
+        <Input placeholder="Rahul Tiwari" value={name} onChange={(e) => setName(e.target.value)} required />
+
+        <Label>Email</Label>
+        <Input type="email" placeholder="name@restro.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+      </div>
+      <DrawerFooter>
+        <Button onClick={handleNext}>Continue</Button>
+      </DrawerFooter>
+    </>
   );
 }
 
-// Promo component
-function Promo() {
+export function Promo() {
   const plugin = React.useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: false })
+    Autoplay({ delay: 2000, stopOnInteraction: false }),
   );
 
   return (

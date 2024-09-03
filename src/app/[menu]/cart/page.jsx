@@ -1,16 +1,12 @@
 'use client';
-import Counter from "./Counter";
+import { useState, useEffect } from 'react';
 import Image from "next/image";
-
 import {
   Bike,
   ChevronLeft,
   ChevronsRight,
-  Copy,
-  NotepadText,
   Package,
   Store,
-  Tags,
   Utensils,
   UtensilsCrossed,
 } from "lucide-react";
@@ -41,105 +37,89 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-
-export function Items() {
-  return (
-    <Card className="overflow-hidden">
-      <CardHeader className="flex flex-row items-start bg-muted/50">
-        <div className="grid gap-0.5">
-          <CardTitle className="flex gap-1">
-            <NotepadText className="h-4 w-4" /> Bill Summary
-          </CardTitle>
-          <CardDescription>Apply Offers to get discount</CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent className="p-6 text-sm">
-        <Label forHTML="coupon" className="flex items-center mb-1">
-          <Tags className="h-3.5 w-3.5 mr-1" /> Discount
-        </Label>
-        <div className="flex items-center gap-2 mb-4">
-          <Input
-            id="coupon"
-            label="Coupon Code"
-            placeholder="Enter coupon code"
-          />
-          <Button>Apply</Button>
-        </div>
-        <div className="grid gap-3">
-          <ul className="grid gap-3">
-            <li className="flex items-center justify-between">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span>₹ 112</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span className="text-muted-foreground">GST</span>
-              <span>₹ 8</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span className="text-muted-foreground">Platform Fee</span>
-              <span>₹ 0</span>
-            </li>
-            <li className="flex items-center justify-between font-semibold">
-              <span className="text-muted-foreground">Discount</span>
-              <span>₹ 0</span>
-            </li>
-            <li className="flex items-center justify-between font-semibold">
-              <span className="text-muted-foreground">Total</span>
-              <span>₹ 120</span>
-            </li>
-          </ul>
-        </div>
-        <Separator className="my-4" />
-        <li className="flex items-center justify-between font-semibold">
-          <span>To Pay</span>
-          <span>₹ 120</span>
-        </li>
-      </CardContent>
-    </Card>
-  );
-}
+import { usePathname } from 'next/navigation'
+import { Items } from "./Items";
+import { SetQuantity } from "./SetQuantity";
 
 export default function Orders() {
-  const { cartItems, updateQuantity } = useCart();
-  
+  const { fetchCartItems } = useCart();
+  const [cartItems, setCartItems] = useState([]);
+  const [outlet, setOutlet] = useState({});
+
+  const pathname = usePathname();
+  const pathnames = pathname.split('/');
+
+  const fetchOutlet = async () => {
+    const response = await fetch(`http://localhost:8000/api/shop/outlet/${pathnames[1]}`);
+    return response.json();
+  };
+
+  useEffect(() => {
+    (async () => {
+      const outlet = await fetchOutlet();
+      setOutlet(outlet);
+      const items = await fetchCartItems();
+      setCartItems(items);
+    })()
+  }, [cartItems]);
+
   return (
     <main className="grid gap-4 p-6">
       <h2 className="text-2xl font-semibold">
-        <Button size="icon" variant="outline" className="h-8 w-8 mr-2">
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
+        <Link href={`/${pathnames[1]}`}>
+          <Button size="icon" variant="outline" className="h-8 w-8 mr-2">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </Link>
         Cart
       </h2>
 
       <Breadcrumb>
         <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/components">Restaurant</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Cart</BreadcrumbPage>
-          </BreadcrumbItem>
+          {
+            pathnames.map((path, index) => {
+              if (index === 0) {
+                return (
+                  <>
+                    <BreadcrumbItem key={index}>
+                      <BreadcrumbLink href="/">HOME</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    {index < pathnames.length - 1 ?
+                      <><BreadcrumbItem key={index}>
+                        <BreadcrumbLink href={`/${path}`}>{path.toLocaleUpperCase()}</BreadcrumbLink>
+                      </BreadcrumbItem>
+                        <BreadcrumbSeparator /></>
+                      :
+                      <BreadcrumbItem key={index}>
+                        <BreadcrumbPage>{path.toLocaleUpperCase()}</BreadcrumbPage>
+                      </BreadcrumbItem>
+                    }
+                  </>
+                );
+              }
+            }
+            )
+          }
         </BreadcrumbList>
       </Breadcrumb>
 
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/50">
           <CardTitle className="flex gap-1">
-            <Store className="h-4 w-4" /> Restaurant
+            <Store className="h-4 w-4" /> {outlet?.shop?.name}
           </CardTitle>
           <CardDescription>Outlet Information</CardDescription>
         </CardHeader>
@@ -159,10 +139,10 @@ export default function Orders() {
               <div className="text-base text-primary font-semibold">
                 Sagar Gaire, Chhindwara
               </div>
-              Liam Johnson1234 Main St.Anytown, CA 12345
+              {outlet?.location}
               <div className="flex items-center gap-1">
                 <Link
-                  href="tel:+1234567890"
+                  href={`/${pathnames[1]}`}
                   className="flex items-center text-blue-500"
                 >
                   View Menu <ChevronRightIcon className="h-4 w-4 mt-1" />
@@ -180,23 +160,23 @@ export default function Orders() {
           </CardTitle>
           <CardDescription>Customize your quantity</CardDescription>
         </CardHeader>
-        {cartItems.map((item) => (
-            <CardContent>
-              <div className="mt-2">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium flex items-center gap-1">
-                    <Image src="/veg.svg" alt="Dash" height="14" width="14" />
-                    {item.name}
-                  </p>
-                  <Counter count={item.quantity} itemId={item.id} />
-                </div>
-                <div className="flex items-center justify-between text-sm mt-1">
-                  <span className="font-medium text-muted-foreground">₹ {item.price}</span>
-                  <span className="font-medium">₹ {item.totalPrice}</span>
-                </div>
+        {cartItems.map((item, key) => (
+          <CardContent key={key}>
+            <div className="mt-2">
+              <div className="flex items-center justify-between">
+                <p className="font-medium flex items-center gap-1">
+                  <Image src="/veg.svg" alt="Dash" height="14" width="14" />
+                  {item.food_item?.name}{item.variant && ` - ${item.variant?.variant}`}
+                </p>
+                <SetQuantity item={item} />
               </div>
-            </CardContent>
-          ))}
+              <div className="flex items-center justify-between text-sm mt-1">
+                <span className="font-medium text-muted-foreground">₹ {item.food_item.price}</span>
+                <span className="font-medium">₹ {item.totalPrice}</span>
+              </div>
+            </div>
+          </CardContent>
+        ))}
       </Card>
 
       <Card className="p-6 gap-3 items-start flex flex-col">
@@ -229,7 +209,7 @@ export default function Orders() {
           </SelectContent>
         </Select>
       </Card>
-      <Items />
+      <Items items={cartItems}/>
       <button className="sticky bottom-5 right-0 p-4 rounded-xl bg-green-500 flex items-center justify-center text-white font-bold">
         Proceed to Pay ₹ 120 <ChevronsRight className="h-6 w-6 ml-3" />
       </button>

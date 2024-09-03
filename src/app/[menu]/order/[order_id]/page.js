@@ -44,7 +44,7 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
-function Timeline() {
+function Timeline({ order_id }) {
   return (
     <div className="relative pt-6 pl-6 after:absolute after:inset-y-0 after:w-px after:bg-muted-foreground/20 grid gap-5">
       <div className="grid gap-1 text-sm relative">
