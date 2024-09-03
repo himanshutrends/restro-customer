@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/sheet";
 import { LogOut, MenuIcon, ShoppingBag, User } from "lucide-react";
 import Link from "next/link";
+import { getSession, logout } from "@/app/lib/auth/session";
 
-export function Menu() {
+export async function Menu() {
+  const session = await getSession();
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -25,7 +27,7 @@ export function Menu() {
       <SheetContent className="w-64 flex-col flex justify-between">
         <SheetHeader className="items-start">
           <SheetTitle>My Account</SheetTitle>
-          <SheetDescription>Hi Himanshu!</SheetDescription>
+          <SheetDescription>Hi {session?.user?.name}!</SheetDescription>
 
           <div className="grid items-start text-sm font-medium mt-4">
             <Link
@@ -36,7 +38,7 @@ export function Menu() {
               Profile
             </Link>
             <Link
-              href="/orders"
+              href="/order"
               className="flex items-center gap-3 rounded-lg pr-3 py-2 text-muted-foreground transition-all hover:text-primary"
             >
               <ShoppingBag className="h-4 w-4" />
@@ -45,13 +47,20 @@ export function Menu() {
           </div>
         </SheetHeader>
         <Button variant="outline">
-          <Link
-            href="#"
-            className="flex items-center gap-3 rounded-lg pr-3 py-2 text-muted-foreground transition-all hover:text-primary"
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Link>
+          <form action={
+            async () => {
+              'use server';
+              await logout();
+            }
+          }>
+            <button
+              type="submit"
+              className="flex items-center gap-3 rounded-lg pr-3 py-2 text-muted-foreground transition-all hover:text-primary"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+          </form>
         </Button>
       </SheetContent>
     </Sheet>

@@ -1,17 +1,18 @@
 "use client";
+import { useCart } from "@/context/CartContext";
 import { SquareMinus, SquarePlus } from "lucide-react";
 import React from "react";
 
-function Counter() {
-  const [count, setCount] = React.useState(1); // Use React's state management
+function Counter({ count, item, setCount }) {
+  const { updateQuantity } = useCart();
 
   const decrement = () => {
-    if (count > 1) {
-      setCount(count - 1);
-    }
+    updateQuantity(item?.id, count - 1);
+    setCount(count - 1)
   };
 
   const increment = () => {
+    updateQuantity(item?.id, count + 1);
     setCount(count + 1);
   };
 

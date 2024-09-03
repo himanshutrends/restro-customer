@@ -1,5 +1,5 @@
 "use client";
-
+import { createContext, useContext } from "react";
 import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
@@ -32,139 +32,193 @@ import {
 } from "@/components/ui/input-otp";
 import { Input } from "./input";
 import { Label } from "./label";
+import { useRouter } from "next/navigation";
+
+const AuthContext = createContext();
 
 export function Auth() {
   const [step, setStep] = useState(1);
   const [otpTimer, setOtpTimer] = useState(30);
-  const [userExists, setUserExists] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
 
   useEffect(() => {
     if (step === 2) {
       const interval = setInterval(() => {
         setOtpTimer((prev) => (prev > 0 ? prev - 1 : 0));
       }, 1000);
-
       return () => clearInterval(interval);
     }
   }, [step]);
 
-  const handleNext = () => {
-    if (step === 1) {
-      // Mock function to check if the user exists
-      const exists = mockCheckUserExists();
-      setUserExists(exists);
-      setStep(2);
-    } else if (step === 2) {
-      if (userExists) {
-        // If the user exists, skip to submission
-        submitLogin();
-      } else {
-        setStep(3);
-      }
-    } else if (step === 3) {
-      submitLogin();
-    }
-  };
-
-  const getButtonText = () => {
-    if (step === 1 || (step === 2 && !userExists)) {
-      return "Continue";
-    }
-    return "Submit";
-  };
-
-  const submitLogin = () => {
-    // Logic to handle the final submission
-    console.log("Login Successfull");
-  };
-
   return (
-    <Drawer>
-      <DrawerTrigger asChild>
-        <Button variant="outline" className="h-8 w-fit ml-auto">
-          Login
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent className="h-[65vh]">
-        <DrawerHeader className="flex items-start w-full">
-          <div className="flex flex-col items-start w-full">
-            <DrawerDescription>Order with Restro</DrawerDescription>
-            <DrawerTitle>Login</DrawerTitle>
-          </div>
-          <DrawerClose>
-            <Button
-              size="icon"
-              variant="outline"
-              className="rounded-full h-6 w-6"
-            >
-              <X size={16} />
-            </Button>
-          </DrawerClose>
-        </DrawerHeader>
-        <Promo />
-        <Separator className="my-4" />
-        {step === 1 && <Phone />}
-        {step === 2 && <Otp timer={otpTimer} />}
-        {step === 3 && !userExists && <Name />}
-        <DrawerFooter>
-          <Button onClick={handleNext}>{getButtonText()}</Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+    <AuthContext.Provider value={{ step, setStep, phone, setPhone, otp, setOtp, otpTimer }}>
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button variant="outline" className="h-8 w-fit ml-auto">
+            Login
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="h-[65vh]">
+          <DrawerHeader className="flex items-start w-full">
+            <div className="flex flex-col items-start w-full">
+              <DrawerDescription>Order with Tacoza</DrawerDescription>
+              <DrawerTitle>Login</DrawerTitle>
+            </div>
+            <DrawerClose>
+              <Button
+                size="icon"
+                variant="outline"
+                className="rounded-full h-6 w-6"
+              >
+                <X size={16} />
+              </Button>
+            </DrawerClose>
+          </DrawerHeader>
+          <Promo />
+          <Separator className="my-4" />
+          {step === 1 && <Phone />}
+          {step === 2 && <Otp />}
+          {step === 3 && <Name />}
+        </DrawerContent>
+      </Drawer>
+    </AuthContext.Provider>
   );
 }
 
 function Phone() {
+  const { phone, setPhone, setStep, setOtp } = useContext(AuthContext);
+  const validatePhone = () => {
+    if (phone.length !== 10) {
+      return false;
+    }
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      return false;
+    }
+    return true;
+  };
+
+  const handleNext = async () => {
+    if (!validatePhone(phone)) {
+      console.log("Invalid Phone Number");
+      return;
+    }
+    const response = await fetch("http://localhost:8000/api/auth/send-otp/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ 'phone_number': phone }),
+    });
+    if (response.status === 200) {
+      const res = await response.json();
+      setOtp(res.otp);
+      setStep(2);
+    }
+    console.log(response);
+  };
   return (
-    <div className="flex flex-col gap-2 w-full px-4">
-      <Label>Mobile Number</Label>
-      <Input placeholder="Enter Phone Number" required />
-    </div>
+    <>
+      <div className="flex flex-col gap-2 w-full px-4">
+        <Label>Mobile Number</Label>
+        <Input placeholder="Enter Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+      </div>
+      <DrawerFooter>
+        <Button onClick={handleNext}>Get OTP</Button>
+      </DrawerFooter>
+    </>
   );
 }
 
-function Otp({ timer }) {
+function Otp() {
+  const { phone, otp, setOtp, setStep, otpTimer } = useContext(AuthContext);
+  const router = useRouter();
+  const handleNext = async () => {
+    const response = await fetch("/api/verify-otp/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ phone, otp }),
+    });
+    if (response.status === 200) {
+      const res = await response.json();
+      if (!res.user.name || !res.user.email) {
+        setStep(3);
+      } else {
+        router.push("/cart");
+      }
+    }
+  }
   return (
-    <div className="flex flex-col gap-2 items-center w-full px-4">
-      <Label>Enter OTP</Label>
-      <InputOTP maxLength={6}>
-        <InputOTPGroup>
-          <InputOTPSlot index={0} />
-          <InputOTPSlot index={1} />
-        </InputOTPGroup>
-        <InputOTPSeparator />
-        <InputOTPGroup>
-          <InputOTPSlot index={2} />
-          <InputOTPSlot index={3} />
-        </InputOTPGroup>
-        <InputOTPSeparator />
-        <InputOTPGroup>
-          <InputOTPSlot index={4} />
-          <InputOTPSlot index={5} />
-        </InputOTPGroup>
-      </InputOTP>
-      <p className="text-xs">
-        Resend in 00:{timer.toString().padStart(2, "0")}
-      </p>
-    </div>
+    <>
+      <div className="flex flex-col gap-2 items-center w-full px-4">
+        {otp}
+        <Label>Enter OTP</Label>
+        <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+          </InputOTPGroup>
+          <InputOTPSeparator />
+          <InputOTPGroup>
+            <InputOTPSlot index={2} />
+            <InputOTPSlot index={3} />
+          </InputOTPGroup>
+          <InputOTPSeparator />
+          <InputOTPGroup>
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
+        <p className="text-xs">
+          Resend in 00:{otpTimer.toString().padStart(2, "0")}
+        </p>
+      </div>
+      <DrawerFooter>
+        <Button onClick={handleNext}>Continue</Button>
+      </DrawerFooter>
+    </>
   );
 }
 
 function Name() {
+  const { setStep } = useContext(AuthContext);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const router = useRouter();
+
+  const handleNext = async () => {
+    if (!name || !email) {
+      console.log("Invalid Name or Email");
+      return;
+    }
+    const response = await fetch("/api/update-user/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email }),
+    });
+    if (response.status === 200) {
+      console.log(response);
+      router.push("/cart");
+    }
+  }
   return (
-    <div className="flex flex-col gap-2 w-full px-4">
-      <Label>Name</Label>
-      <Input placeholder="Rahul Tiwari" required />
+    <>
+      <div className="flex flex-col gap-2 w-full px-4">
+        <Label>Name</Label>
+        <Input placeholder="Rahul Tiwari" value={name} onChange={(e) => setName(e.target.value)} required />
 
-      <Label>Email</Label>
-      <Input type="email" placeholder="rahul@restro.com" />
-    </div>
+        <Label>Email</Label>
+        <Input type="email" placeholder="name@restro.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+      </div>
+      <DrawerFooter>
+        <Button onClick={handleNext}>Continue</Button>
+      </DrawerFooter>
+    </>
   );
-}
-
-// Mock function to simulate user existence check
-function mockCheckUserExists() {
-  return Math.random() > 0.5; // Randomly returns true or false
 }
 
 export function Promo() {
