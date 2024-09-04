@@ -118,7 +118,7 @@ export default function Order() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 mt-4">
-          <Label forHTML="review">Rate this Restaurant</Label>
+          <Label forhtml="review">Rate this Restaurant</Label>
           <div className="flex items-center gap-1 text-yellow-500" id="review">
             <Star className="h-4 w-4 fill-yellow-500" />
             <Star className="h-4 w-4 fill-yellow-500" />

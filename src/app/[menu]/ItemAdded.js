@@ -1,9 +1,10 @@
 'use client';
 import { useCart } from "@/context/CartContext";
-import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
+import Link from "next/link";
 
 export function ItemAdded({ params }) {
+
     const { cartItems } = useCart();
     return (
         cartItems.length > 0 &&

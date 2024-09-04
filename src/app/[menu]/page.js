@@ -42,8 +42,10 @@ import { getSession } from "@/app/lib/auth/session";
 export default async function Home({ params }) {
   const itemsPromis = apiGet(`/api/shop/client-menu/${params.menu}`);
   const outletPromis = apiGet(`/api/shop/outlet/${params.menu}`);
-  const [items, outlet] = await Promise.all([itemsPromis, outletPromis]);
+  const waitPromisForLoader = new Promise((resolve) => setTimeout(resolve, 1000));
+  const [items, outlet] = await Promise.all([itemsPromis, outletPromis, waitPromisForLoader]);
   const session = await getSession();
+
   return (
     <main className="flex w-full min-h-screen flex-col gap-4 justify-evenly p-6 overflow-hidden">
         {/* Header */}
@@ -54,7 +56,7 @@ export default async function Home({ params }) {
             </Button>
             Tacoza
           </h2>
-          {session ? <Menu /> : <Auth />}
+          {session ? <Menu menu={params.menu} /> : <Auth />}
         </div>
 
         <Breadcrumb>

@@ -9,8 +9,8 @@ import {
   Store,
   Utensils,
   UtensilsCrossed,
+  Tags, NotepadText
 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,7 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -28,7 +27,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
 import {
   Select,
   SelectContent,
@@ -36,17 +34,82 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { usePathname } from 'next/navigation'
-import { Items } from "./Items";
+import { usePathname } from 'next/navigation';
 import { SetQuantity } from "./SetQuantity";
+import Loading from '@/app/loading';
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+
+const iconMap = {
+  'veg': "/veg.svg",
+  'nonveg': "/non-veg.svg",
+  'egg': "/egg.svg",
+};
+
+export function Items({ items }) {
+  const totalPrice = items?.reduce((acc, item) => acc + item.totalPrice, 0);
+  const Gst = totalPrice * 0.05;
+  return (
+      <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-start bg-muted/50">
+              <div className="grid gap-0.5">
+                  <CardTitle className="flex gap-1">
+                      <NotepadText className="h-4 w-4" /> Bill Summary
+                  </CardTitle>
+                  <CardDescription>Apply Offers to get discount</CardDescription>
+              </div>
+          </CardHeader>
+          <CardContent className="p-6 text-sm">
+              <Label forhtml="coupon" className="flex items-center mb-1">
+                  <Tags className="h-3.5 w-3.5 mr-1" /> Discount
+              </Label>
+              <div className="flex items-center gap-2 mb-4">
+                  <Input
+                      id="coupon"
+                      label="Coupon Code"
+                      placeholder="Enter coupon code"
+                  />
+                  <Button>Apply</Button>
+              </div>
+              <div className="grid gap-3">
+                  <ul className="grid gap-3">
+                      <li className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Subtotal</span>
+                          <span>₹ {totalPrice}</span>
+                      </li>
+                      <li className="flex items-center justify-between">
+                          <span className="text-muted-foreground">GST</span>
+                          <span>₹ {Gst}</span>
+                      </li>
+                      <li className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Platform Fee</span>
+                          <span>₹ 0</span>
+                      </li>
+                      <li className="flex items-center justify-between font-semibold">
+                          <span className="text-muted-foreground">Discount</span>
+                          <span>₹ 0</span>
+                      </li>
+                      <li className="flex items-center justify-between font-semibold">
+                          <span className="text-muted-foreground">Total</span>
+                          <span>₹ {totalPrice}</span>
+                      </li>
+                  </ul>
+              </div>
+              <Separator className="my-4" />
+              <li className="flex items-center justify-between font-semibold">
+                  <span>To Pay</span>
+                  <span>₹ {totalPrice}</span>
+              </li>
+          </CardContent>
+      </Card>
+  );
+}
 
 export default function Orders() {
   const { fetchCartItems } = useCart();
@@ -54,15 +117,15 @@ export default function Orders() {
   const [tables, setTables] = useState([]);
   const [outlet, setOutlet] = useState({});
   const [totalPrice, setTotalPrice] = useState(0);
-
+  const [loading, setLoading] = useState(true);
   const [orderType, setOrderType] = useState({});
-  const handleOrderType = (e) => {
-    setOrderType({ ...orderType, [e.target.name]: e.target.value });
-  };
-
 
   const pathname = usePathname();
   const pathnames = pathname.split('/');
+
+  const handleOrderType = (e) => {
+    setOrderType({ ...orderType, [e.target.name]: e.target.value });
+  };
 
   const fetchOutlet = async () => {
     const response = await fetch(`http://localhost:8000/api/shop/outlet/${pathnames[1]}`);
@@ -71,7 +134,7 @@ export default function Orders() {
     }
     return response.json();
   };
-  
+
   const fetchTables = async () => {
     const response = await fetch(`http://localhost:8000/api/shop/tables/${pathnames[1]}`);
     if (!response.ok) {
@@ -79,20 +142,32 @@ export default function Orders() {
     }
     return response.json();
   };
-  
+
   useEffect(() => {
-    (async () => {
-      const [outlet, tables, cartItems] = await Promise.all([
-        fetchOutlet(),
-        fetchTables(),
-        fetchCartItems(),
-      ]);
-      setOutlet(outlet);
-      setTables(tables);
-      setCartItems(cartItems);
-      setTotalPrice(cartItems?.reduce((acc, item) => acc + item.totalPrice, 0))
-    })()
-  }, [cartItems]);
+    const fetchData = async () => {
+      try {
+        const [outletData, tablesData, cartData] = await Promise.all([
+          fetchOutlet(),
+          fetchTables(),
+          fetchCartItems(),
+        ]);
+        setOutlet(outletData);
+        setTables(tablesData);
+        setCartItems(cartData);
+        setTotalPrice(cartData?.reduce((acc, item) => acc + item.totalPrice, 0));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [fetchCartItems]);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <main className="grid gap-4 p-6">
@@ -109,40 +184,39 @@ export default function Orders() {
       {/* Breadcrumb */}
       <Breadcrumb>
         <BreadcrumbList>
-          {
-            pathnames.map((path, index) => {
-              if (index === 0) {
-                return (
-                  <>
-                    <BreadcrumbItem key={index}>
-                      <BreadcrumbLink href="/">HOME</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                  </>
-                );
-              } else {
-                return (
-                  <>
-                    {index < pathnames.length - 1 ?
-                      <><BreadcrumbItem key={index}>
+          {pathnames.map((path, index) => {
+            if (index === 0) {
+              return (
+                <>
+                  <BreadcrumbItem key={index}>
+                    <BreadcrumbLink href="/">HOME</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                </>
+              );
+            } else {
+              return (
+                <>
+                  {index < pathnames.length - 1 ? (
+                    <>
+                      <BreadcrumbItem key={index}>
                         <BreadcrumbLink href={`/${path}`}>{path.toLocaleUpperCase()}</BreadcrumbLink>
                       </BreadcrumbItem>
-                        <BreadcrumbSeparator /></>
-                      :
-                      <BreadcrumbItem key={index}>
-                        <BreadcrumbPage>{path.toLocaleUpperCase()}</BreadcrumbPage>
-                      </BreadcrumbItem>
-                    }
-                  </>
-                );
-              }
+                      <BreadcrumbSeparator />
+                    </>
+                  ) : (
+                    <BreadcrumbItem key={index}>
+                      <BreadcrumbPage>{path.toLocaleUpperCase()}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  )}
+                </>
+              );
             }
-            )
-          }
+          })}
         </BreadcrumbList>
       </Breadcrumb>
-      
-      {/* Restro Info */}
+
+      {/* Restaurant Info */}
       <Card className="overflow-hidden">
         <CardHeader className="bg-rose-50">
           <CardTitle className="flex gap-1">
@@ -179,7 +253,7 @@ export default function Orders() {
           </div>
         </CardContent>
       </Card>
-        
+
       {/* List Items */}
       <Card className="overflow-hidden">
         <CardHeader className="bg-rose-50">
@@ -188,12 +262,12 @@ export default function Orders() {
           </CardTitle>
           <CardDescription>Customize your quantity</CardDescription>
         </CardHeader>
-        {cartItems?.map((item, key) => (
+        {cartItems.map((item, key) => (
           <CardContent key={key}>
             <div className="mt-2">
               <div className="flex items-center justify-between">
                 <p className="font-medium flex items-center gap-1">
-                  <Image src="/veg.svg" alt="Dash" height="14" width="14" />
+                  <Image src={iconMap[item.food_item.food_type]} alt="Dash" height="14" width="14" />
                   {item.food_item?.name}{item.variant && ` - ${item.variant?.variant}`}
                 </p>
                 <SetQuantity item={item} />
@@ -203,11 +277,13 @@ export default function Orders() {
                 <span className="font-medium">₹ {item.totalPrice}</span>
               </div>
             </div>
-            <div className="flex items-center justify-between text-sm mt-1">
-              <span className="font-medium text-muted-foreground">₹ 120</span>
-              <span className="font-medium">₹ 120</span>
-            </div>
-            <p className="text-muted-foreground text-xs">Cheese, Dahi</p>
+            <p className="text-muted-foreground text-xs">
+              {item.addons && item.addons.length > 0 && item.addons.map((addon, key) => (
+                <span key={key}>
+                  {addon.name}{key < item.addons.length - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </p>
             <Link
               href="/components"
               className="flex items-center text-rose-500 text-xs"
@@ -219,7 +295,7 @@ export default function Orders() {
       </Card>
 
       <Card className="p-6 gap-3 items-start flex flex-col">
-        <Label forHTML="type">Order Type</Label>
+        <Label forhtml="type">Order Type</Label>
         <ToggleGroup id="type" type="single">
           <ToggleGroupItem value="a" className="border rounded-full">
             <UtensilsCrossed className="h-3.5 w-3.5 mr-1" /> DineIn
@@ -233,10 +309,10 @@ export default function Orders() {
           </ToggleGroupItem>
         </ToggleGroup>
 
-        <Label forHTML="instruction">Add Cooking Instruction</Label>
+        <Label forhtml="instruction">Add Cooking Instruction</Label>
         <Textarea id="instruction" placeholder="Add your cooking instruction" onChange={handleOrderType} />
 
-        <Label forHTML="tableid">Table</Label>
+        <Label forhtml="tableid">Table</Label>
         <Select id="tableid">
           <SelectTrigger>
             <SelectValue placeholder={tables?.length > 0 && tables[0]?.name} />

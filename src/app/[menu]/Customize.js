@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     Drawer,
     DrawerClose,
@@ -21,9 +21,6 @@ import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 
 function VariantAddon({ variant, selectedVariant, onVariantChange, addons, selectedAddons, onAddonChange }) {
-    console.log(selectedVariant);
-    console.log(selectedAddons);
-    console.log(variant);
     return (
         <div className="mx-4">
             {/* Variant */}
@@ -80,22 +77,14 @@ function VariantAddon({ variant, selectedVariant, onVariantChange, addons, selec
     );
 }
 
-
 export function Customize({ item }) {
     const { addToCart } = useCart();
-
-    // State to manage selected variant and add-ons
-    // default variant should be the the one which has same price as item price
     const [selectedVariant, setSelectedVariant] = useState(item?.variants?.type.find((variant) => variant.price === item.price));
     const [selectedAddons, setSelectedAddons] = useState([]);
     const [totalPrice, setTotalPrice] = useState(item.price);
-    const [count, setCount] = React.useState(1);
+    const [count, setCount] = useState(1);
 
-    // Calculate total price whenever the selected variant or add-ons change
     useEffect(() => {
-        if (count <= 0) {
-            setCount(1);
-        }
         let addonsPrice = selectedAddons.reduce((sum, addon) => sum + parseFloat(addon.price), 0);
         if (selectedVariant) {
             setTotalPrice(parseFloat(selectedVariant.price) * count + addonsPrice);
@@ -109,11 +98,12 @@ export function Customize({ item }) {
     };
 
     const handleAddonChange = (addonPrice, isChecked) => {
-        if (isChecked) {
-            setSelectedAddons((prev) => [...prev, addonPrice]);
-        } else {
-            setSelectedAddons((prev) => prev.filter((price) => price !== addonPrice));
-        }
+        setSelectedAddons((prev) => {
+            if (isChecked) {
+                return [...prev, addonPrice];
+            }
+            return prev.filter((price) => price !== addonPrice);
+        });
     };
 
     const handleAddToCart = () => {

@@ -1,4 +1,3 @@
-"use client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Image from "next/image";
 import { Star } from "lucide-react"; // Import Star correctly as a named export
@@ -82,7 +81,7 @@ function CategoryComponent({ category }) {
 }
 
 export function MenuAccordion({ items }) {
-  console.log(items);
+
   return (
     <div className="space-y-4">
       {items.map((category) => (

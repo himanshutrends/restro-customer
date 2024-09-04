@@ -10,6 +10,7 @@ export const useCart = () => useContext(CartContext);
 
 // Cart Provider Component
 export const CartProvider = ({ children }) => {
+  console.log('CartProvider');
   const [cartItems, setCartItems] = useState([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
@@ -38,6 +39,7 @@ export const CartProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    console.log('CartProvider useEffect');
     fetchCartItems();
   }, []);
 

@@ -30,7 +30,6 @@
     "cmdk": "^1.0.0",
     "embla-carousel-autoplay": "^8.2.0",
     "embla-carousel-react": "^8.2.0",
-    "firebase": "^10.13.1",
     "input-otp": "^1.2.4",
     "jose": "^5.8.0",
     "lucide-react": "^0.436.0",
