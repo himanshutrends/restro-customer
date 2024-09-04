@@ -3,7 +3,6 @@ import { ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { SearchRestro } from "./search";
-import Image from "next/image";
 
 export default function Scan() {
   return (
@@ -20,7 +19,6 @@ export default function Scan() {
       <p>or</p>
       <p>Scan the QR code to order</p>
       <Scanner onScan={(result) => console.log(result)} />
-      <Image src="/loader.gif" alt="loading" width={50} height={50} />
     </main>
   );
 }

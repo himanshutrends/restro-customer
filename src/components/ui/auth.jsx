@@ -33,6 +33,7 @@ import {
 import { Input } from "./input";
 import { Label } from "./label";
 import { useRouter } from "next/navigation";
+import { PhoneInput } from "./phone-input";
 
 const AuthContext = createContext();
 
@@ -52,7 +53,9 @@ export function Auth() {
   }, [step]);
 
   return (
-    <AuthContext.Provider value={{ step, setStep, phone, setPhone, otp, setOtp, otpTimer }}>
+    <AuthContext.Provider
+      value={{ step, setStep, phone, setPhone, otp, setOtp, otpTimer }}
+    >
       <Drawer>
         <DrawerTrigger asChild>
           <Button variant="outline" className="h-8 w-fit ml-auto">
@@ -75,7 +78,9 @@ export function Auth() {
               </Button>
             </DrawerClose>
           </DrawerHeader>
-          <Promo />
+          <div className="px-4">
+            <Promo />
+          </div>
           <Separator className="my-4" />
           {step === 1 && <Phone />}
           {step === 2 && <Otp />}
@@ -108,7 +113,7 @@ function Phone() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ 'phone_number': phone }),
+      body: JSON.stringify({ phone_number: phone }),
     });
     if (response.status === 200) {
       const res = await response.json();
@@ -119,9 +124,15 @@ function Phone() {
   };
   return (
     <>
-      <div className="flex flex-col gap-2 w-full px-4">
+      <div className="flex flex-col justify-center h-full gap-2 w-full px-4">
         <Label>Mobile Number</Label>
-        <Input placeholder="Enter Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+        <PhoneInput
+          placeholder="Enter Phone Number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+          defaultCountry="IN"
+        />
       </div>
       <DrawerFooter>
         <Button onClick={handleNext}>Get OTP</Button>
@@ -149,7 +160,7 @@ function Otp() {
         router.push("/cart");
       }
     }
-  }
+  };
   return (
     <>
       <div className="flex flex-col gap-2 items-center w-full px-4">
@@ -204,15 +215,25 @@ function Name() {
       console.log(response);
       router.push("/cart");
     }
-  }
+  };
   return (
     <>
       <div className="flex flex-col gap-2 w-full px-4">
         <Label>Name</Label>
-        <Input placeholder="Rahul Tiwari" value={name} onChange={(e) => setName(e.target.value)} required />
+        <Input
+          placeholder="Rahul Tiwari"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
 
         <Label>Email</Label>
-        <Input type="email" placeholder="name@restro.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input
+          type="email"
+          placeholder="name@restro.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </div>
       <DrawerFooter>
         <Button onClick={handleNext}>Continue</Button>
@@ -229,7 +250,7 @@ export function Promo() {
   return (
     <Carousel
       plugins={[plugin.current]}
-      className="w-full px-4"
+      className="w-full"
       onMouseEnter={plugin.current.stop}
       onMouseLeave={plugin.current.reset}
     >
