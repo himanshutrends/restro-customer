@@ -1,5 +1,5 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Bike,
@@ -44,9 +44,10 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { usePathname } from 'next/navigation'
+import { usePathname } from "next/navigation";
 import { Items } from "./Items";
 import { SetQuantity } from "./SetQuantity";
+import ShinyText from "@/components/ui/animations/ShinyText";
 
 export default function Orders() {
   const { fetchCartItems } = useCart();
@@ -60,26 +61,29 @@ export default function Orders() {
     setOrderType({ ...orderType, [e.target.name]: e.target.value });
   };
 
-
   const pathname = usePathname();
-  const pathnames = pathname.split('/');
+  const pathnames = pathname.split("/");
 
   const fetchOutlet = async () => {
-    const response = await fetch(`http://localhost:8000/api/shop/outlet/${pathnames[1]}`);
+    const response = await fetch(
+      `http://localhost:8000/api/shop/outlet/${pathnames[1]}`,
+    );
     if (!response.ok) {
-      throw new Error('Failed to fetch outlet');
+      throw new Error("Failed to fetch outlet");
     }
     return response.json();
   };
-  
+
   const fetchTables = async () => {
-    const response = await fetch(`http://localhost:8000/api/shop/tables/${pathnames[1]}`);
+    const response = await fetch(
+      `http://localhost:8000/api/shop/tables/${pathnames[1]}`,
+    );
     if (!response.ok) {
-      throw new Error('Failed to fetch tables');
+      throw new Error("Failed to fetch tables");
     }
     return response.json();
   };
-  
+
   useEffect(() => {
     (async () => {
       const [outlet, tables, cartItems] = await Promise.all([
@@ -90,8 +94,8 @@ export default function Orders() {
       setOutlet(outlet);
       setTables(tables);
       setCartItems(cartItems);
-      setTotalPrice(cartItems?.reduce((acc, item) => acc + item.totalPrice, 0))
-    })()
+      setTotalPrice(cartItems?.reduce((acc, item) => acc + item.totalPrice, 0));
+    })();
   }, [cartItems]);
 
   return (
@@ -109,39 +113,42 @@ export default function Orders() {
       {/* Breadcrumb */}
       <Breadcrumb>
         <BreadcrumbList>
-          {
-            pathnames.map((path, index) => {
-              if (index === 0) {
-                return (
-                  <>
-                    <BreadcrumbItem key={index}>
-                      <BreadcrumbLink href="/">HOME</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                  </>
-                );
-              } else {
-                return (
-                  <>
-                    {index < pathnames.length - 1 ?
-                      <><BreadcrumbItem key={index}>
-                        <BreadcrumbLink href={`/${path}`}>{path.toLocaleUpperCase()}</BreadcrumbLink>
-                      </BreadcrumbItem>
-                        <BreadcrumbSeparator /></>
-                      :
+          {pathnames.map((path, index) => {
+            if (index === 0) {
+              return (
+                <>
+                  <BreadcrumbItem key={index}>
+                    <BreadcrumbLink href="/">HOME</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                </>
+              );
+            } else {
+              return (
+                <>
+                  {index < pathnames.length - 1 ? (
+                    <>
                       <BreadcrumbItem key={index}>
-                        <BreadcrumbPage>{path.toLocaleUpperCase()}</BreadcrumbPage>
+                        <BreadcrumbLink href={`/${path}`}>
+                          {path.toLocaleUpperCase()}
+                        </BreadcrumbLink>
                       </BreadcrumbItem>
-                    }
-                  </>
-                );
-              }
+                      <BreadcrumbSeparator />
+                    </>
+                  ) : (
+                    <BreadcrumbItem key={index}>
+                      <BreadcrumbPage>
+                        {path.toLocaleUpperCase()}
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                  )}
+                </>
+              );
             }
-            )
-          }
+          })}
         </BreadcrumbList>
       </Breadcrumb>
-      
+
       {/* Restro Info */}
       <Card className="overflow-hidden">
         <CardHeader className="bg-rose-50">
@@ -163,7 +170,7 @@ export default function Orders() {
             </div>
 
             <div className="text-muted-foreground text-sm">
-              <div className="text-base text-primary font-semibold">
+              <div className="text-base text-primary font-semibold truncate">
                 Sagar Gaire, Chhindwara
               </div>
               {outlet?.location}
@@ -179,7 +186,7 @@ export default function Orders() {
           </div>
         </CardContent>
       </Card>
-        
+
       {/* List Items */}
       <Card className="overflow-hidden">
         <CardHeader className="bg-rose-50">
@@ -194,12 +201,15 @@ export default function Orders() {
               <div className="flex items-center justify-between">
                 <p className="font-medium flex items-center gap-1">
                   <Image src="/veg.svg" alt="Dash" height="14" width="14" />
-                  {item.food_item?.name}{item.variant && ` - ${item.variant?.variant}`}
+                  {item.food_item?.name}
+                  {item.variant && ` - ${item.variant?.variant}`}
                 </p>
                 <SetQuantity item={item} />
               </div>
               <div className="flex items-center justify-between text-sm mt-1">
-                <span className="font-medium text-muted-foreground">₹ {item.food_item.price}</span>
+                <span className="font-medium text-muted-foreground">
+                  ₹ {item.food_item.price}
+                </span>
                 <span className="font-medium">₹ {item.totalPrice}</span>
               </div>
             </div>
@@ -234,7 +244,11 @@ export default function Orders() {
         </ToggleGroup>
 
         <Label forHTML="instruction">Add Cooking Instruction</Label>
-        <Textarea id="instruction" placeholder="Add your cooking instruction" onChange={handleOrderType} />
+        <Textarea
+          id="instruction"
+          placeholder="Add your cooking instruction"
+          onChange={handleOrderType}
+        />
 
         <Label forHTML="tableid">Table</Label>
         <Select id="tableid">
@@ -243,17 +257,26 @@ export default function Orders() {
           </SelectTrigger>
           <SelectContent>
             {tables?.map((table, key) => (
-              <SelectItem key={key} value={table.id} onClick={() => setOrderType({ tableid: table.id })}>
+              <SelectItem
+                key={key}
+                value={table.id}
+                onClick={() => setOrderType({ tableid: table.id })}
+              >
                 {table.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </Card>
-      <Items items={cartItems}/>
-      <button className="sticky bottom-5 right-0 p-4 rounded-xl bg-rose-500 flex items-center justify-center text-white font-bold shadow-xl">
-        Proceed to Pay ₹ {totalPrice} <ChevronsRight className="h-6 w-6 ml-3" />
-      </button>
+      <Items items={cartItems} />
+      <Button className="sticky bottom-5 right-0 p-8 rounded-xl shadow-xl">
+        <ShinyText
+          shimmerWidth={300}
+          className="drop-shadow-lg text-lg font-bold"
+        >
+          Proceed to Pay ₹{totalPrice}
+        </ShinyText>
+      </Button>
     </main>
   );
 }
