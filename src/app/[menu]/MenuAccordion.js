@@ -9,7 +9,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SwatchBook } from "lucide-react";
+import { SwatchBook, Settings2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -17,7 +17,7 @@ import Image from "next/image";
 import { Star } from "lucide-react"; // Import Star correctly as a named export
 import { Separator } from "@/components/ui/separator";
 import { Customize } from "./Customize";
-import { Input } from "@/components/ui/input";
+import { SearchMenu } from "./SearchMenu";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const iconMap = {
@@ -26,7 +26,7 @@ const iconMap = {
   egg: "/egg.svg",
 };
 
-export default function MenuTab({ items, setFocusCategory }) {
+export function MenuTab({ items, setFocusCategory }) {
   const { cartItems } = useCart();
 
   const getFoodItemCount = (item) => {
@@ -43,7 +43,7 @@ export default function MenuTab({ items, setFocusCategory }) {
     <div className={`fixed ${cartItems?.length > 0 ? 'bottom-20' : 'bottom-0'} right-0 m-2 w-fit`}>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <div className="rounded-full flex flex-col justify-center items-center bg-black p-4 text-white">
+          <div className="rounded-full aspect-square h-16 w-16 flex flex-col justify-center items-center bg-black text-white text-xs shadow-lg">
             <SwatchBook />
             Menu
           </div>
@@ -169,6 +169,10 @@ export function MenuAccordion({ items }) {
       <section className="w-full">
         <div className="">
           <div className="flex justify-between">
+            <span className="flex items-center text-muted-foreground text-sm">
+              Filters <Settings2 className="w-3.5 h-3.5 ml-1" />{" "}
+              <Separator orientation="vertical" className="mx-2" />
+            </span>
             <ToggleGroup type="single" variant="outline">
               <ToggleGroupItem
                 value="bold"
@@ -196,7 +200,7 @@ export function MenuAccordion({ items }) {
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
-          <Input className="my-2" placeholder="Search for dishes" />
+          <SearchMenu items={items} />
           {/* Menu */}
           <div className="space-y-4">
             {items.map((category) => (

@@ -1,5 +1,5 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Bike,
@@ -46,6 +46,7 @@ import Loading from '@/app/loading';
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Auth } from '@/components/ui/auth';
+import ShinyText from "@/components/ui/animations/ShinyText";
 
 const iconMap = {
   'veg': "/veg.svg",
@@ -127,7 +128,7 @@ export default function Orders() {
   const [session, setSession] = useState(false);
 
   const pathname = usePathname();
-  const pathnames = pathname.split('/');
+  const pathnames = pathname.split("/");
 
   const handleOrderType = (e) => {
     console.log(orderType);
@@ -135,17 +136,21 @@ export default function Orders() {
   };
 
   const fetchOutlet = async () => {
-    const response = await fetch(`http://localhost:8000/api/shop/outlet/${pathnames[1]}`);
+    const response = await fetch(
+      `http://localhost:8000/api/shop/outlet/${pathnames[1]}`,
+    );
     if (!response.ok) {
-      throw new Error('Failed to fetch outlet');
+      throw new Error("Failed to fetch outlet");
     }
     return response.json();
   };
 
   const fetchTables = async () => {
-    const response = await fetch(`http://localhost:8000/api/shop/tables/${pathnames[1]}`);
+    const response = await fetch(
+      `http://localhost:8000/api/shop/tables/${pathnames[1]}`,
+    );
     if (!response.ok) {
-      throw new Error('Failed to fetch tables');
+      throw new Error("Failed to fetch tables");
     }
     return response.json();
   };
@@ -270,8 +275,8 @@ export default function Orders() {
             </div>
 
             <div className="text-muted-foreground text-sm">
-              <div className="text-base text-primary font-semibold">
-              {outlet?.name}
+              <div className="text-base text-primary font-semibold truncate">
+                Sagar Gaire, Chhindwara
               </div>
               {outlet?.location}
               <div className="flex items-center gap-1">
@@ -306,7 +311,9 @@ export default function Orders() {
                 <SetQuantity item={item} />
               </div>
               <div className="flex items-center justify-between text-sm mt-1">
-                <span className="font-medium text-muted-foreground">₹ {item.food_item.price}</span>
+                <span className="font-medium text-muted-foreground">
+                  ₹ {item.food_item.price}
+                </span>
                 <span className="font-medium">₹ {item.totalPrice}</span>
               </div>
             </div>
@@ -367,9 +374,14 @@ export default function Orders() {
         </Select>
       </Card>
       <Items items={cartItems} />
-      <button  onClick={handleSubmit} className="sticky bottom-5 right-0 p-4 rounded-xl bg-rose-500 flex items-center justify-center text-white font-bold shadow-xl">
-        Proceed to Pay ₹ {totalPrice} <ChevronsRight className="h-6 w-6 ml-3" />
-      </button>
+      <Button onClick={handleSubmit} className="sticky bottom-5 right-0 p-6 rounded-xl shadow-xl">
+        <ShinyText
+          shimmerWidth={300}
+          className="drop-shadow-lg text-lg font-bold"
+        >
+          Proceed to Pay ₹{totalPrice}
+        </ShinyText>
+      </Button>
     </main>
   );
 }
