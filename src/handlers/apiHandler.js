@@ -4,6 +4,7 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
 // Default headers for all requests
 const defaultHeaders = {
     "Content-Type": "application/json",
+    cache: "no-store",
 };
 
 /**

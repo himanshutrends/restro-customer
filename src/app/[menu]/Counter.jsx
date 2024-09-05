@@ -3,16 +3,12 @@ import { useCart } from "@/context/CartContext";
 import { SquareMinus, SquarePlus } from "lucide-react";
 import React from "react";
 
-function Counter({ count, item, setCount }) {
-  const { updateQuantity } = useCart();
-
+function Counter({ count, setCount }) {
   const decrement = () => {
-    updateQuantity(item?.id, count - 1);
     setCount(count - 1)
   };
 
   const increment = () => {
-    updateQuantity(item?.id, count + 1);
     setCount(count + 1);
   };
 

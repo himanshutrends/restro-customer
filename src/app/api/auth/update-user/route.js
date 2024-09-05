@@ -1,5 +1,6 @@
 import { getSession } from "@/app/lib/auth/session";
 import { cookies } from "next/headers";
+import { NextResponse } from 'next/server'
 
 export async function POST(request) {
     const req = await request.json()
@@ -27,8 +28,8 @@ export async function POST(request) {
         if (response.status === 200) {
             const res = await response.json();
             console.log(res)
-            return Response.json(res)
+            return NextResponse.json(res, { status: 200 })
         }
     }
-    return Response.json({ 'error': 'Failed to update user' })
+    return NextResponse.error('Error updating user', { status: 500 })
 }

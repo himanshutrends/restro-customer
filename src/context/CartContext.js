@@ -113,7 +113,6 @@ export const CartProvider = ({ children }) => {
         } : item
       )
     );
-    console.log(cartItems, 'cartItems')
     // Trying to sync with backend
     try {
       const response = await fetch(`/api/cart/${outletSlug}/${id}`, {
@@ -126,8 +125,6 @@ export const CartProvider = ({ children }) => {
       if (response.status !== 200) {
         throw new Error('Error updating item quantity in cart');
       }
-      const cartItems = await response.json();
-      setCartItems(cartItems);
     } catch (error) {
       console.error('Error updating item quantity in cart:', error);
     }
