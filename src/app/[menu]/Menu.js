@@ -1,12 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -15,7 +11,7 @@ import { LogOut, MenuIcon, ShoppingBag, User } from "lucide-react";
 import Link from "next/link";
 import { getSession, logout } from "@/app/lib/auth/session";
 
-export async function Menu() {
+export async function Menu({ menu }) {
   const session = await getSession();
   return (
     <Sheet>
@@ -28,7 +24,6 @@ export async function Menu() {
         <SheetHeader className="items-start">
           <SheetTitle>My Account</SheetTitle>
           <SheetDescription>Hi {session?.user?.name}!</SheetDescription>
-
           <div className="grid items-start text-sm font-medium mt-4">
             <Link
               href="#"
@@ -38,7 +33,7 @@ export async function Menu() {
               Profile
             </Link>
             <Link
-              href="/order"
+              href={`${menu}/order`}
               className="flex items-center gap-3 rounded-lg pr-3 py-2 text-muted-foreground transition-all hover:text-primary"
             >
               <ShoppingBag className="h-4 w-4" />

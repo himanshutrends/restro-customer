@@ -1,16 +1,14 @@
 "use client";
+import Image from "next/image";
 import { createContext, useContext } from "react";
 import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
-import Image from "next/image";
 import * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +35,7 @@ import { PhoneInput } from "./phone-input";
 
 const AuthContext = createContext();
 
-export function Auth() {
+export function Auth({ menu, drawerOpen, setDrawer }) {
   const [step, setStep] = useState(1);
   const [otpTimer, setOtpTimer] = useState(30);
   const [phone, setPhone] = useState("");
@@ -56,13 +54,13 @@ export function Auth() {
     <AuthContext.Provider
       value={{ step, setStep, phone, setPhone, otp, setOtp, otpTimer }}
     >
-      <Drawer>
+      <Drawer open={drawerOpen} onOpenChange={setDrawer}>
         <DrawerTrigger asChild>
           <Button variant="outline" className="h-8 w-fit ml-auto">
             Login
           </Button>
         </DrawerTrigger>
-        <DrawerContent className="h-[65vh]">
+        <DrawerContent className="h-[69vh]">
           <DrawerHeader className="flex items-start w-full">
             <div className="flex flex-col items-start w-full">
               <DrawerDescription>Order with Tacoza</DrawerDescription>
@@ -83,8 +81,8 @@ export function Auth() {
           </div>
           <Separator className="my-4" />
           {step === 1 && <Phone />}
-          {step === 2 && <Otp />}
-          {step === 3 && <Name />}
+          {step === 2 && <Otp menu={menu} setDrawer={setDrawer} />}
+          {step === 3 && <Name menu={menu} setDrawer={setDrawer} />}
         </DrawerContent>
       </Drawer>
     </AuthContext.Provider>
@@ -93,21 +91,7 @@ export function Auth() {
 
 function Phone() {
   const { phone, setPhone, setStep, setOtp } = useContext(AuthContext);
-  const validatePhone = () => {
-    if (phone.length !== 10) {
-      return false;
-    }
-    if (!/^[6-9]\d{9}$/.test(phone)) {
-      return false;
-    }
-    return true;
-  };
-
   const handleNext = async () => {
-    if (!validatePhone(phone)) {
-      console.log("Invalid Phone Number");
-      return;
-    }
     const response = await fetch("http://localhost:8000/api/auth/send-otp/", {
       method: "POST",
       headers: {
@@ -120,7 +104,6 @@ function Phone() {
       setOtp(res.otp);
       setStep(2);
     }
-    console.log(response);
   };
   return (
     <>
@@ -128,8 +111,9 @@ function Phone() {
         <Label>Mobile Number</Label>
         <PhoneInput
           placeholder="Enter Phone Number"
+          name="phone"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={setPhone}
           required
           defaultCountry="IN"
         />
@@ -141,11 +125,11 @@ function Phone() {
   );
 }
 
-function Otp() {
+function Otp({ menu, setDrawer }) {
   const { phone, otp, setOtp, setStep, otpTimer } = useContext(AuthContext);
   const router = useRouter();
   const handleNext = async () => {
-    const response = await fetch("/api/verify-otp/", {
+    const response = await fetch("/api/auth/verify-otp/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -157,7 +141,8 @@ function Otp() {
       if (!res.user.name || !res.user.email) {
         setStep(3);
       } else {
-        router.push("/cart");
+        router.push(`/${menu}/cart`);
+        setDrawer(false);
       }
     }
   };
@@ -193,8 +178,7 @@ function Otp() {
   );
 }
 
-function Name() {
-  const { setStep } = useContext(AuthContext);
+function Name({ menu, setDrawer }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const router = useRouter();
@@ -204,7 +188,7 @@ function Name() {
       console.log("Invalid Name or Email");
       return;
     }
-    const response = await fetch("/api/update-user/", {
+    const response = await fetch("/api/auth/update-user/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -212,8 +196,8 @@ function Name() {
       body: JSON.stringify({ name, email }),
     });
     if (response.status === 200) {
-      console.log(response);
-      router.push("/cart");
+      router.push(`${menu}/cart`);
+      setDrawer(false);
     }
   };
   return (

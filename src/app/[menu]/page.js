@@ -1,11 +1,9 @@
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import {
   BellRing,
   BookmarkPlus,
   Share2,
   Star,
-  SwatchBook,
   ChefHat,
   MapPin,
   Phone,
@@ -17,15 +15,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -33,12 +22,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Input } from "@/components/ui/input";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Auth, Promo } from "@/components/ui/auth";
 import { Menu } from "./Menu";
 import { apiGet } from "@/handlers/apiHandler";
-import { MenuAccordion, SearchMenu } from "./temp";
+import { MenuAccordion } from "./MenuAccordion";
 import { ItemAdded } from "./ItemAdded";
 import { getSession } from "@/app/lib/auth/session";
 import { Separator } from "@/components/ui/separator";
@@ -46,8 +33,12 @@ import { Separator } from "@/components/ui/separator";
 export default async function Home({ params }) {
   const itemsPromis = apiGet(`/api/shop/client-menu/${params.menu}`);
   const outletPromis = apiGet(`/api/shop/outlet/${params.menu}`);
-  const [items, outlet] = await Promise.all([itemsPromis, outletPromis]);
+  const waitPromisForLoader = new Promise((resolve) => setTimeout(resolve, 1000));
+  const [items, outlet] = await Promise.all([itemsPromis, outletPromis, waitPromisForLoader]);
   const session = await getSession();
+
+  console.log(items, outlet, session);
+
   return (
     <>
       <main className="flex w-full min-h-screen flex-col gap-4 justify-evenly p-6 overflow-hidden">
@@ -65,7 +56,7 @@ export default async function Home({ params }) {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              <BreadcrumbLink href="/">HOME</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -143,71 +134,9 @@ export default async function Home({ params }) {
         </div>
 
         {/* Menu and Filters */}
-        <section className="w-full">
-          <div className="">
-            <div className="flex justify-between">
-              <span className="flex items-center text-muted-foreground text-sm">
-                Filters <Settings2 className="w-3.5 h-3.5 ml-1" />{" "}
-                <Separator orientation="vertical" className="mx-2" />
-              </span>
-              <ToggleGroup type="single" variant="outline">
-                <ToggleGroupItem
-                  value="bold"
-                  aria-label="Toggle bold"
-                  className="gap-2 px-4 data-[state=on]:bg-green-100 data-[state=on]:text-green-700"
-                >
-                  <Image src="/veg.svg" alt="Dash" height="16" width="16" />
-                  <span>Veg</span>
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="italic"
-                  aria-label="Toggle italic"
-                  className="gap-2 px-4 data-[state=on]:bg-yellow-50 data-[state=on]:text-yellow-400"
-                >
-                  <Image src="/egg.svg" alt="Dash" height="16" width="16" />
-                  <span>Egg</span>
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="strikethrough"
-                  aria-label="Toggle strikethrough"
-                  className="gap-2 px-4 whitespace-nowrap data-[state=on]:bg-red-100 data-[state=on]:text-red-800"
-                >
-                  <Image src="/non-veg.svg" alt="Dash" height="16" width="16" />
-                  <span>Non-Veg</span>
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-            <SearchMenu items={items} />
+        <MenuAccordion items={items} />
 
-            {/* Menu */}
-            <MenuAccordion items={items} />
-          </div>
-        </section>
-
-        <div className="fixed bottom-20 right-0 m-2 w-fit">
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <div className="rounded-full aspect-square h-16 w-16 flex flex-col justify-center items-center bg-black text-white text-xs shadow-lg">
-                <SwatchBook />
-                Menu
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mr-6">
-              <DropdownMenuLabel>Menu</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {items.map((item) => (
-                <DropdownMenuItem key={item.id}>
-                  {item.name}
-                  <DropdownMenuShortcut>
-                    <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                      {item.food_items ? item.food_items?.length : 0}
-                    </Badge>
-                  </DropdownMenuShortcut>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {/* Item Added */}
         <ItemAdded params={params} />
       </main>
       <section className="bg-muted p-4 pb-20">

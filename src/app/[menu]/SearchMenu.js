@@ -13,7 +13,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { MenuItemComponent } from "./MenuAccordion";
 
 export function SearchMenu() {
   const searchItems = [

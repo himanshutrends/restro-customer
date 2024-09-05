@@ -9,8 +9,8 @@ import {
   Store,
   Utensils,
   UtensilsCrossed,
+  Tags, NotepadText
 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,7 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -28,7 +27,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
 import {
   Select,
   SelectContent,
@@ -36,33 +34,106 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { usePathname } from "next/navigation";
-import { Items } from "./Items";
+import { usePathname } from 'next/navigation';
 import { SetQuantity } from "./SetQuantity";
+import Loading from '@/app/loading';
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Auth } from '@/components/ui/auth';
 import ShinyText from "@/components/ui/animations/ShinyText";
 
+const iconMap = {
+  'veg': "/veg.svg",
+  'nonveg': "/non-veg.svg",
+  'egg': "/egg.svg",
+};
+
+export function Items({ items }) {
+  const totalPrice = items?.reduce((acc, item) => acc + item.totalPrice, 0);
+  const Gst = totalPrice * 0.05;
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-row items-start bg-muted/50">
+        <div className="grid gap-0.5">
+          <CardTitle className="flex gap-1">
+            <NotepadText className="h-4 w-4" /> Bill Summary
+          </CardTitle>
+          <CardDescription>Apply Offers to get discount</CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6 text-sm">
+        <Label forhtml="coupon" className="flex items-center mb-1">
+          <Tags className="h-3.5 w-3.5 mr-1" /> Discount
+        </Label>
+        <div className="flex items-center gap-2 mb-4">
+          <Input
+            id="coupon"
+            label="Coupon Code"
+            placeholder="Enter coupon code"
+          />
+          <Button>Apply</Button>
+        </div>
+        <div className="grid gap-3">
+          <ul className="grid gap-3">
+            <li className="flex items-center justify-between">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span>₹ {totalPrice}</span>
+            </li>
+            <li className="flex items-center justify-between">
+              <span className="text-muted-foreground">GST</span>
+              <span>₹ {Gst}</span>
+            </li>
+            <li className="flex items-center justify-between">
+              <span className="text-muted-foreground">Platform Fee</span>
+              <span>₹ 0</span>
+            </li>
+            <li className="flex items-center justify-between font-semibold">
+              <span className="text-muted-foreground">Discount</span>
+              <span>₹ 0</span>
+            </li>
+            <li className="flex items-center justify-between font-semibold">
+              <span className="text-muted-foreground">Total</span>
+              <span>₹ {totalPrice}</span>
+            </li>
+          </ul>
+        </div>
+        <Separator className="my-4" />
+        <li className="flex items-center justify-between font-semibold">
+          <span>To Pay</span>
+          <span>₹ {totalPrice}</span>
+        </li>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Orders() {
-  const { fetchCartItems } = useCart();
-  const [cartItems, setCartItems] = useState([]);
+  const { cartItems } = useCart();
   const [tables, setTables] = useState([]);
   const [outlet, setOutlet] = useState({});
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
-
-  const [orderType, setOrderType] = useState({});
-  const handleOrderType = (e) => {
-    setOrderType({ ...orderType, [e.target.name]: e.target.value });
-  };
+  const [loading, setLoading] = useState(true);
+  const [orderType, setOrderType] = useState({
+    type: 'dine_in',
+    table_id: null,
+    instruction: '',
+  });
+  const [session, setSession] = useState(false);
 
   const pathname = usePathname();
   const pathnames = pathname.split("/");
+
+  const handleOrderType = (e) => {
+    console.log(orderType);
+    setOrderType({ ...orderType, [e.target.name]: e.target.value });
+  };
 
   const fetchOutlet = async () => {
     const response = await fetch(
@@ -84,31 +155,69 @@ export default function Orders() {
     return response.json();
   };
 
+  const isAuthenticated = async () => {
+    const response = await fetch("/api/auth/is-authenticated/");
+    if (response.status === 200) {
+      return true;
+    }
+    return false;
+  };
+
   useEffect(() => {
     (async () => {
-      const [outlet, tables, cartItems] = await Promise.all([
-        fetchOutlet(),
-        fetchTables(),
-        fetchCartItems(),
-      ]);
-      setOutlet(outlet);
-      setTables(tables);
-      setCartItems(cartItems);
-      setTotalPrice(cartItems?.reduce((acc, item) => acc + item.totalPrice, 0));
+      try {
+        const [outletData, tablesData, user] = await Promise.all([
+          fetchOutlet(),
+          fetchTables(),
+          isAuthenticated(),
+        ]);
+        setOutlet(outletData);
+        setTables(tablesData);
+        setSession(user);
+        setTotalPrice(cartItems?.reduce((acc, item) => acc + item.totalPrice, 0));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [cartItems]);
 
-  return (
-    <main className="grid gap-4 p-6">
+  const handleSubmit = async () => {
+    if (!session) {
+      setDrawerOpen(true);
+      return
+    }
+    const response = await fetch(`/api/orders/${pathnames[1]}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderType),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data);
+    }
+    if (response.status === 401) {
+      setSession(false);
+    }
+  }
+
+  return loading ? <Loading suppressHydrationWarning/> : (
+    <main className="grid gap-4 p-6" suppressHydrationWarning>
       {/* Header */}
-      <h2 className="text-2xl font-semibold">
-        <Link href={`/${pathnames[1]}`}>
-          <Button size="icon" variant="outline" className="h-8 w-8 mr-2">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        Cart
-      </h2>
+      <div className="flex justify-between">
+        <h2 className="text-2xl font-semibold">
+          <Link href={`/${pathnames[1]}`}>
+            <Button size="icon" variant="outline" className="h-8 w-8 mr-2">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          Cart
+        </h2>
+        {!session && <Auth menu={pathnames[1]} drawerOpen={drawerOpen} setDrawer={setDrawerOpen} /> }
+      </div>
 
       {/* Breadcrumb */}
       <Breadcrumb>
@@ -129,17 +238,13 @@ export default function Orders() {
                   {index < pathnames.length - 1 ? (
                     <>
                       <BreadcrumbItem key={index}>
-                        <BreadcrumbLink href={`/${path}`}>
-                          {path.toLocaleUpperCase()}
-                        </BreadcrumbLink>
+                        <BreadcrumbLink href={`/${path}`}>{path.toLocaleUpperCase()}</BreadcrumbLink>
                       </BreadcrumbItem>
                       <BreadcrumbSeparator />
                     </>
                   ) : (
                     <BreadcrumbItem key={index}>
-                      <BreadcrumbPage>
-                        {path.toLocaleUpperCase()}
-                      </BreadcrumbPage>
+                      <BreadcrumbPage>{path.toLocaleUpperCase()}</BreadcrumbPage>
                     </BreadcrumbItem>
                   )}
                 </>
@@ -149,7 +254,7 @@ export default function Orders() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      {/* Restro Info */}
+      {/* Restaurant Info */}
       <Card className="overflow-hidden">
         <CardHeader className="bg-rose-50">
           <CardTitle className="flex gap-1">
@@ -195,14 +300,13 @@ export default function Orders() {
           </CardTitle>
           <CardDescription>Customize your quantity</CardDescription>
         </CardHeader>
-        {cartItems?.map((item, key) => (
+        {cartItems.map((item, key) => (
           <CardContent key={key}>
             <div className="mt-2">
               <div className="flex items-center justify-between">
                 <p className="font-medium flex items-center gap-1">
-                  <Image src="/veg.svg" alt="Dash" height="14" width="14" />
-                  {item.food_item?.name}
-                  {item.variant && ` - ${item.variant?.variant}`}
+                  <Image src={iconMap[item.food_item.food_type]} alt="Dash" height="14" width="14" />
+                  {item.food_item?.name}{item.variant && ` - ${item.variant.name}`}
                 </p>
                 <SetQuantity item={item} />
               </div>
@@ -213,11 +317,13 @@ export default function Orders() {
                 <span className="font-medium">₹ {item.totalPrice}</span>
               </div>
             </div>
-            <div className="flex items-center justify-between text-sm mt-1">
-              <span className="font-medium text-muted-foreground">₹ 120</span>
-              <span className="font-medium">₹ 120</span>
-            </div>
-            <p className="text-muted-foreground text-xs">Cheese, Dahi</p>
+            <p className="text-muted-foreground text-xs">
+              {item.addons && item.addons.length > 0 && item.addons.map((addon, key) => (
+                <span key={key}>
+                  {addon.name}{key < item.addons.length - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </p>
             <Link
               href="/components"
               className="flex items-center text-rose-500 text-xs"
@@ -229,38 +335,37 @@ export default function Orders() {
       </Card>
 
       <Card className="p-6 gap-3 items-start flex flex-col">
-        <Label forHTML="type">Order Type</Label>
-        <ToggleGroup id="type" type="single">
-          <ToggleGroupItem value="a" className="border rounded-full">
+        <Label forhtml="type">Order Type</Label>
+        <ToggleGroup id="type" type="single" value="dine_in" onValueChange={(value) => {setOrderType({...orderType, type: value})}}>
+          <ToggleGroupItem value="dine_in" className="border rounded-full">
             <UtensilsCrossed className="h-3.5 w-3.5 mr-1" /> DineIn
           </ToggleGroupItem>
-          <ToggleGroupItem value="b" className="border rounded-full">
+          <ToggleGroupItem value="takeaway" className="border rounded-full">
             <Package className="h-3.5 w-3.5 mr-1" />
             Takeaway
           </ToggleGroupItem>
-          <ToggleGroupItem value="c" className="border rounded-full">
+          <ToggleGroupItem value="delivery" className="border rounded-full">
             <Bike className="h-3.5 w-3.5 mr-1" /> Delivery
           </ToggleGroupItem>
         </ToggleGroup>
 
-        <Label forHTML="instruction">Add Cooking Instruction</Label>
-        <Textarea
-          id="instruction"
-          placeholder="Add your cooking instruction"
-          onChange={handleOrderType}
-        />
+        <Label forhtml="instruction">Add Cooking Instruction</Label>
+        <Textarea 
+          id="instruction" 
+          name="instruction"
+          placeholder="Add your cooking instruction" 
+          onChange={handleOrderType} />
 
-        <Label forHTML="tableid">Table</Label>
-        <Select id="tableid">
+        <Label forhtml="tableid">Table</Label>
+        <Select id="tableid" onValueChange={(value) => {setOrderType({...orderType, table_id: value})}}>
           <SelectTrigger>
-            <SelectValue placeholder={tables?.length > 0 && tables[0]?.name} />
+            <SelectValue placeholder="Select Table" />
           </SelectTrigger>
           <SelectContent>
             {tables?.map((table, key) => (
-              <SelectItem
-                key={key}
-                value={table.id}
-                onClick={() => setOrderType({ tableid: table.id })}
+              <SelectItem 
+                key={key} 
+                value={table.id} 
               >
                 {table.name}
               </SelectItem>
@@ -269,7 +374,7 @@ export default function Orders() {
         </Select>
       </Card>
       <Items items={cartItems} />
-      <Button className="sticky bottom-5 right-0 p-8 rounded-xl shadow-xl">
+      <Button onClick={handleSubmit} className="sticky bottom-5 right-0 p-6 rounded-xl shadow-xl">
         <ShinyText
           shimmerWidth={300}
           className="drop-shadow-lg text-lg font-bold"

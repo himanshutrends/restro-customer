@@ -39,5 +39,4 @@ export async function logout() {
         value: '',
         maxAge: 0,
     })
-    return redirect('/');
 }

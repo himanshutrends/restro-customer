@@ -1,10 +1,11 @@
 "use client";
 import { useCart } from "@/context/CartContext";
-import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
+import Link from "next/link";
 
 export function ItemAdded({ params }) {
   const { cartItems } = useCart();
+  console.log(cartItems, "From ItemAdded.js");
   return (
     cartItems.length > 0 && (
       <button className="fixed bottom-0 right-0 w-full bg-rose-600 flex items-center justify-between p-6 slide-in-from-bottom-0">
