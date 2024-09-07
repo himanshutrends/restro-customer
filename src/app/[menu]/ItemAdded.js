@@ -8,7 +8,7 @@ export function ItemAdded({ params }) {
   console.log(cartItems, "From ItemAdded.js");
   return (
     cartItems.length > 0 && (
-      <button className="fixed bottom-0 right-0 w-full bg-rose-600 flex items-center justify-between p-6 slide-in-from-bottom-0 shadow-inner">
+      <button className="fixed bottom-0 right-0 w-full bg-rose-600 flex items-center justify-between p-6 slide-in-from-bottom-0">
         <span className="text-white font-bold">
           {cartItems.length} item added
         </span>
