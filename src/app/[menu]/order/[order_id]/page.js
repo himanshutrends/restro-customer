@@ -44,31 +44,14 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
-function Timeline({ order_id }) {
-  return (
-    <div className="relative pt-6 pl-6 after:absolute after:inset-y-0 after:w-px after:bg-muted-foreground/20 grid gap-5">
-      <div className="grid gap-1 text-sm relative">
-        <div className="aspect-square w-3 bg-primary rounded-full absolute left-0 translate-x-[-29.5px] z-10 top-1" />
-        <div className="font-medium">Order Created</div>
-        <div className="text-muted-foreground">23 March 2023, 08:23 PM</div>
-      </div>
-      <div className="grid gap-1 text-sm relative">
-        <div className="aspect-square w-3 bg-primary rounded-full absolute left-0 translate-x-[-29.5px] z-10 top-1" />
-        <div className="font-medium">Order Cooking</div>
-        <div className="text-muted-foreground">23 March 2023, 08:25 PM</div>
-      </div>
-
-      <div className="grid gap-1 text-sm relative">
-        <span className="flex h-3 w-3 absolute left-0 translate-x-[-29.5px] z-10 top-1">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-        </span>
-        <div className="font-medium">Order Completed</div>
-        <div className="text-muted-foreground">23 March 2023, 08:49 PM</div>
-      </div>
-    </div>
-  );
-}
+import {
+  Timeline,
+  TimelineContent,
+  TimelineDot,
+  TimelineHeading,
+  TimelineItem,
+  TimelineLine,
+} from "@/components/ui/animations/timeline";
 
 export default function Order() {
   return (
@@ -140,7 +123,29 @@ export default function Order() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Timeline />
+          <Timeline>
+            <iframe
+              className="flex items-center justify-center w-full h-52"
+              src="https://lottie.host/embed/8b3b1e73-5217-4373-a3a8-f868f2ccc493/FCrGjRZ7Pm.json"
+            />
+            <TimelineItem status="done">
+              <TimelineHeading side="right">Order Placed</TimelineHeading>
+              <TimelineDot status="done" />
+              <TimelineLine done />
+              <TimelineContent>
+                <p>Order placed successfully</p>
+              </TimelineContent>
+            </TimelineItem>
+            <TimelineItem>
+              <TimelineHeading>Preparing Food</TimelineHeading>
+              <TimelineDot />
+              <TimelineLine />
+            </TimelineItem>
+            <TimelineItem>
+              <TimelineHeading>Order Complete</TimelineHeading>
+              <TimelineDot />
+            </TimelineItem>
+          </Timeline>
         </CardContent>
       </Card>
       <Card className="overflow-hidden">

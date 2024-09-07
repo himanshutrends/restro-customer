@@ -33,8 +33,14 @@ import { Separator } from "@/components/ui/separator";
 export default async function Home({ params }) {
   const itemsPromis = apiGet(`/api/shop/client-menu/${params.menu}`);
   const outletPromis = apiGet(`/api/shop/outlet/${params.menu}`);
-  const waitPromisForLoader = new Promise((resolve) => setTimeout(resolve, 1000));
-  const [items, outlet] = await Promise.all([itemsPromis, outletPromis, waitPromisForLoader]);
+  const waitPromisForLoader = new Promise((resolve) =>
+    setTimeout(resolve, 1000),
+  );
+  const [items, outlet] = await Promise.all([
+    itemsPromis,
+    outletPromis,
+    waitPromisForLoader,
+  ]);
   const session = await getSession();
 
   console.log(items, outlet, session);
@@ -72,12 +78,12 @@ export default async function Home({ params }) {
           <div className="absolute flex items-center bottom-0 right-0 rounded-full text-xs px-1.5 bg-black/30  shadow-md text-white m-2">
             <Images className="h-3-5 w-3.5 mr-1" /> More
           </div>
-          <div className="absolute bottom-0 left-0 flex items-end">
+          <div className="absolute bottom-2 left-2 gap-2 flex items-end">
             <img
               src="https://i.pinimg.com/564x/10/84/70/1084704494593cdda1144c91ef188237.jpg"
-              className=" m-2 h-10 w-10 object-cover rounded-full"
+              className="h-10 w-10 object-cover rounded-full"
             />
-            <div className="p-1 px-2 flex items-center  rounded-full text-xs bg-black/30  shadow-md text-secondary mb-2">
+            <div className="p-1 px-2 flex items-center rounded-full text-xs bg-black/30  shadow-md text-secondary">
               <span className="h-2 w-2 rounded-full mr-1 bg-green-600" /> Open
             </div>
           </div>
